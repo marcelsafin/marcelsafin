@@ -39,6 +39,55 @@ await Promise.all(
   }),
 );
 
+const STACK_ICON_SLUGS = Object.freeze({
+  React: "react",
+  "Next.js": "nextdotjs",
+  TypeScript: "typescript",
+  Tailwind: "tailwindcss",
+  Python: "python",
+  FastAPI: "fastapi",
+  "C# / .NET": "csharp",
+  "Node.js": "nodedotjs",
+  Docker: "docker",
+  "Azure DevOps": "azuredevops",
+  "GitHub Actions": "githubactions",
+  Linux: "linux",
+  Playwright: "playwright",
+  PostgreSQL: "postgresql",
+  Git: "git",
+  Figma: "figma",
+});
+
+// Bundled brand marks (simple-icons + devicon, tinted at draw time).
+const stackIconImages = {};
+await Promise.all(
+  [...new Set(Object.values(STACK_ICON_SLUGS))].map(
+    (slug) =>
+      new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => {
+          stackIconImages[slug] = image;
+          resolve();
+        };
+        image.onerror = () =>
+          reject(new Error(`Failed to load stack icon: ${slug}`));
+        image.src = new URL(`./icons/${slug}.svg`, import.meta.url).href;
+      }),
+  ),
+);
+
+function drawStackIcon(context, slug, x, y, size, color) {
+  const offscreen = document.createElement("canvas");
+  offscreen.width = size * 2;
+  offscreen.height = size * 2;
+  const tint = offscreen.getContext("2d");
+  tint.drawImage(stackIconImages[slug], 0, 0, offscreen.width, offscreen.height);
+  tint.globalCompositeOperation = "source-in";
+  tint.fillStyle = color;
+  tint.fillRect(0, 0, offscreen.width, offscreen.height);
+  context.drawImage(offscreen, x, y, size, size);
+}
+
 function roundedShape(width, height, radius) {
   const x = -width / 2;
   const y = -height / 2;
@@ -781,14 +830,25 @@ function renderStack(dark, mobile) {
       context.lineWidth = 2;
       context.strokeRect(x, top, cellWidth, cellHeight);
 
+      const inset = mobile ? 28 : 24;
+      const iconSize = mobile ? 44 : 34;
+      drawStackIcon(
+        context,
+        STACK_ICON_SLUGS[tool],
+        x + inset,
+        top + (mobile ? 24 : 20),
+        iconSize,
+        theme.foreground,
+      );
+
       context.fillStyle = theme.foreground;
       context.font = `600 ${nameSize}px ${MONO}`;
       context.letterSpacing = "2px";
-      context.textAlign = "center";
+      context.textAlign = "left";
       context.fillText(
         tool.toUpperCase(),
-        x + cellWidth / 2,
-        top + cellHeight / 2 + nameSize * 0.36,
+        x + inset,
+        top + cellHeight - (mobile ? 26 : 22),
       );
     });
 
