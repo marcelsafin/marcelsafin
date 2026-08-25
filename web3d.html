@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Marsel Safin — live companion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg: #0d1015;
+        --bg-glow-a: rgba(139, 100, 246, 0.16);
+        --bg-glow-b: rgba(212, 102, 171, 0.10);
+        --fg: #f4f7fb;
+        --muted: #9aa7b8;
+        --card: rgba(17, 24, 39, 0.72);
+        --card-border: rgba(154, 167, 184, 0.14);
+        --chip-border: rgba(244, 247, 251, 0.38);
+        --dot-a: rgba(244, 247, 251, 0.11);
+        --dot-b: rgba(244, 247, 251, 0.07);
+      }
+      html[data-theme="light"] {
+        --bg: #f4f7fb;
+        --bg-glow-a: rgba(139, 100, 246, 0.10);
+        --bg-glow-b: rgba(212, 102, 171, 0.06);
+        --fg: #111827;
+        --muted: #27303b;
+        --card: rgba(255, 255, 255, 0.78);
+        --card-border: rgba(17, 24, 39, 0.09);
+        --chip-border: rgba(17, 24, 39, 0.42);
+        --dot-a: rgba(17, 24, 39, 0.13);
+        --dot-b: rgba(17, 24, 39, 0.08);
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      html, body { height: 100%; }
+      body {
+        background:
+          radial-gradient(60% 50% at 30% 35%, var(--bg-glow-a), transparent 70%),
+          radial-gradient(50% 45% at 72% 70%, var(--bg-glow-b), transparent 70%),
+          var(--bg);
+        color: var(--fg);
+        font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+        transition: background 0.4s ease;
+      }
+      /* Subtle depth texture — two dot-grid scales, fixed for parallax vs content */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background-image: radial-gradient(circle, var(--dot-a) 1.2px, transparent 1.3px);
+        background-size: 30px 30px;
+      }
+      body::after {
+        content: "";
+        position: fixed;
+        inset: -10%;
+        z-index: 0;
+        pointer-events: none;
+        background-image: radial-gradient(circle, var(--dot-b) 2px, transparent 2.2px);
+        background-size: 140px 140px;
+      }
+      #scene {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .divider {
+        grid-row: 2;
+        justify-self: center;
+        width: 96px;
+        height: 3px;
+        margin-top: clamp(14px, 2.4vh, 26px);
+        background: #3fb950;
+        border-radius: 2px;
+      }
+      html[data-theme="light"] .divider { background: #1a7f37; }
+      .grid-line {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: var(--card-border);
+      }
+      .grid-line.left { left: 22%; }
+      .grid-line.right { right: 22%; }
+      .hero {
+        position: relative;
+        height: 100vh;
+        height: 100svh;
+      }
+      .frame {
+        position: absolute;
+        inset: clamp(16px, 3vw, 48px);
+        border: 1px solid var(--card-border);
+        border-radius: 18px;
+        pointer-events: none;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        padding: clamp(20px, 3.4vw, 52px);
+      }
+      .eyebrow {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: clamp(10px, 1.1vw, 14px);
+        letter-spacing: 0.42em;
+        color: var(--muted);
+      }
+      .title-row {
+        text-align: center;
+        margin-top: clamp(4px, 1vw, 12px);
+      }
+      .title {
+        font-weight: 700;
+        font-size: clamp(34px, 5.6vw, 84px);
+        letter-spacing: 0.01em;
+        line-height: 1.1;
+      }
+      .title.right {
+        letter-spacing: 0.06em;
+        margin-left: 0.35em;
+        background: linear-gradient(90deg, #8b64f6, #d466ab, #3fb950, #8b64f6);
+        background-size: 300% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        animation: nameShift 9s ease-in-out infinite;
+      }
+      @keyframes nameShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+      }
+      .reveal {
+        opacity: 0;
+        transform: translateY(26px);
+        transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        transition-delay: var(--reveal-delay, 0ms);
+      }
+      .reveal.in { opacity: 1; transform: none; }
+      .card {
+        grid-row: 3;
+        align-self: end;
+        justify-self: center;
+        width: fit-content;
+        max-width: min(680px, 100%);
+        text-align: center;
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-radius: 14px;
+        padding: clamp(18px, 2.6vw, 32px) clamp(22px, 3vw, 40px);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        position: relative;
+        overflow: hidden;
+      }
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #5f97ff, #8b64f6, #d466ab);
+      }
+      .card .eyebrow { margin-bottom: 10px; }
+      .card .tagline {
+        font-size: clamp(18px, 2.4vw, 30px);
+        font-weight: 700;
+      }
+      .scroll-cue {
+        position: absolute;
+        left: 50%;
+        bottom: -19px;
+        transform: translateX(-50%);
+        z-index: 2;
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        border: 1px solid var(--card-border);
+        background: var(--card);
+        color: var(--muted);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        pointer-events: auto;
+        cursor: pointer;
+        animation: cueFloat 2.6s ease-in-out infinite;
+        transition: color 0.2s ease, border-color 0.2s ease;
+      }
+      .scroll-cue:hover { color: var(--fg); border-color: #3fb950; }
+      .scroll-cue svg { width: 15px; height: 15px; display: block; }
+      @keyframes cueFloat {
+        0%, 100% { transform: translateX(-50%) translateY(0); }
+        50% { transform: translateX(-50%) translateY(5px); }
+      }
+      .content {
+        position: relative;
+        z-index: 1;
+        max-width: 880px;
+        margin: 0 auto;
+        padding: clamp(48px, 10vh, 120px) clamp(20px, 4vw, 48px) clamp(24px, 4vh, 48px);
+        display: grid;
+        gap: clamp(56px, 10vh, 110px);
+      }
+      .section-head {
+        display: grid;
+        gap: 10px;
+        margin-bottom: clamp(20px, 3vh, 32px);
+      }
+      .section-head .rule {
+        height: 3px;
+        width: 64px;
+        background: #3fb950;
+        border-radius: 2px;
+      }
+      html[data-theme="light"] .section-head .rule { background: #1a7f37; }
+      .lead {
+        font-size: clamp(22px, 3vw, 34px);
+        font-weight: 800;
+        line-height: 1.25;
+      }
+      .body-text {
+        color: var(--muted);
+        font-size: clamp(15px, 1.6vw, 18px);
+        line-height: 1.65;
+      }
+      .story {
+        position: relative;
+        display: grid;
+        gap: clamp(36px, 6vh, 64px);
+        padding-left: clamp(24px, 3vw, 40px);
+      }
+      .story::before {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 8px;
+        bottom: 8px;
+        width: 2px;
+        background: linear-gradient(180deg, #3fb950, rgba(63, 185, 80, 0.12));
+        border-radius: 1px;
+      }
+      .story-item { position: relative; display: grid; gap: 10px; }
+      .story-item::before {
+        content: "";
+        position: absolute;
+        left: calc(-1 * clamp(24px, 3vw, 40px) + 1px);
+        top: 6px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #3fb950;
+        box-shadow: 0 0 0 4px var(--bg);
+      }
+      .story-item h3 {
+        font-size: clamp(18px, 2.2vw, 24px);
+        font-weight: 800;
+        line-height: 1.3;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .chip {
+        border: 1px solid var(--chip-border);
+        background: var(--card);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--fg);
+      }
+      .social {
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+      }
+      .social a {
+        width: 46px;
+        height: 46px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        border: 1px solid var(--card-border);
+        background: var(--card);
+        color: var(--muted);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transition: color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+      }
+      .social a:hover { color: var(--fg); border-color: #3fb950; transform: translateY(-2px); }
+      .social svg { width: 19px; height: 19px; display: block; }
+      footer {
+        text-align: center;
+        color: var(--muted);
+        padding: 28px 0 32px;
+        display: grid;
+        gap: 22px;
+        justify-items: center;
+        border-top: 1px solid var(--card-border);
+      }
+      .footer-note {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 11px;
+        letter-spacing: 0.28em;
+      }
+      #theme-toggle {
+        position: fixed;
+        top: clamp(24px, 4vw, 60px);
+        right: clamp(24px, 4vw, 60px);
+        z-index: 2;
+        pointer-events: auto;
+        cursor: pointer;
+        border: 1px solid var(--card-border);
+        background: var(--card);
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 10px;
+        display: grid;
+        place-items: center;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transition: color 0.2s ease, border-color 0.2s ease;
+      }
+      #theme-toggle:hover { color: var(--fg); border-color: #3fb950; }
+      #theme-toggle svg { width: 15px; height: 15px; display: block; }
+      html[data-theme="dark"] #theme-toggle .icon-sun { display: none; }
+      html[data-theme="light"] #theme-toggle .icon-moon { display: none; }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        .scroll-cue { animation: none; }
+        .title.right { animation: none; }
+        .reveal { opacity: 1; transform: none; transition: none; }
+      }
+      @media (max-width: 640px) {
+        .title { font-size: clamp(32px, 10vw, 52px); }
+        .title.right { letter-spacing: 0.03em; }
+        .scroll-cue { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <section class="hero">
+      <div class="frame">
+        <span class="grid-line left" aria-hidden="true"></span>
+        <span class="grid-line right" aria-hidden="true"></span>
+        <div>
+          <div class="title-row">
+            <span class="title">MARSEL</span>
+            <span class="title right">SAFIN</span>
+          </div>
+        </div>
+        <span class="divider" aria-hidden="true"></span>
+        <div class="card">
+          <p class="eyebrow">AI-FIRST DEVELOPMENT</p>
+          <p class="tagline">Systems · Agents · Graphs · Curiosity</p>
+        </div>
+        <a class="scroll-cue" href="#content" aria-label="Scroll to content">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </a>
+      </div>
+    </section>
+    <main class="content" id="content">
+      <section aria-labelledby="intro-heading">
+        <div class="section-head">
+          <p class="eyebrow">AI-FIRST DEVELOPER</p>
+          <span class="rule" aria-hidden="true"></span>
+        </div>
+        <h2 class="lead" id="intro-heading">PhD in breaking things apart until I understand how they work.</h2>
+        <p class="body-text">Curiosity brought me into technology. AI became how I build. I keep pulling systems apart until I understand enough to build with them.</p>
+      </section>
+      <section aria-labelledby="story-heading">
+        <div class="section-head">
+          <p class="eyebrow">THE STORY</p>
+          <span class="rule" aria-hidden="true"></span>
+          <h2 class="lead" id="story-heading" style="position:absolute;left:-9999px">The story</h2>
+        </div>
+        <div class="story">
+          <article class="story-item">
+            <p class="eyebrow">LATE 2023</p>
+            <h3>I wanted to understand how machines are built.</h3>
+            <p class="body-text">When ChatGPT 3.5 arrived, technology became something I could question, provoke, and take apart. I learned by experimenting, pushing limits, breaking assumptions, and tracing what happened next. That loop turned curiosity into a direction.</p>
+          </article>
+          <article class="story-item">
+            <p class="eyebrow">2024</p>
+            <h3>Frontend became my entry into software.</h3>
+            <p class="body-text">I started a 400 YH-point Front End Developer program and gained a structured view of JavaScript, APIs, testing, UX, accessibility, agile work, and delivery.</p>
+          </article>
+          <article class="story-item">
+            <p class="eyebrow">2025</p>
+            <h3>Using AI became AI-first development.</h3>
+            <p class="body-text">I moved from prompting tools to building systems through them. My work expanded into agent orchestration, custom harnesses, AI memory, token optimization, and specialized AI-native SaaS products. I also began running open-weight models in Google Colab and contributing to open-source projects.</p>
+          </article>
+          <article class="story-item">
+            <p class="eyebrow">NOW</p>
+            <h3>I am following the systems underneath the tools.</h3>
+            <p class="body-text">My current focus is graph engineering, context engineering, and machine-learning foundations.</p>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="build-heading">
+        <div class="section-head">
+          <p class="eyebrow">HOW I BUILD</p>
+          <span class="rule" aria-hidden="true"></span>
+        </div>
+        <h2 class="lead" id="build-heading" style="position:absolute;left:-9999px">How I build</h2>
+        <p class="body-text" style="margin-bottom:20px">AI is not an add-on to my workflow. It is the environment I build through.</p>
+        <div class="chips">
+          <span class="chip">Problem definition</span>
+          <span class="chip">Product direction</span>
+          <span class="chip">Agent direction</span>
+          <span class="chip">Debugging</span>
+          <span class="chip">Model and tool selection</span>
+          <span class="chip">Deployment</span>
+          <span class="chip">UX</span>
+        </div>
+      </section>
+      <section aria-labelledby="explore-heading">
+        <div class="section-head">
+          <p class="eyebrow">CURRENTLY EXPLORING</p>
+          <span class="rule" aria-hidden="true"></span>
+        </div>
+        <h2 class="lead" id="explore-heading" style="position:absolute;left:-9999px">Currently exploring</h2>
+        <div class="chips">
+          <span class="chip">Graph engineering</span>
+          <span class="chip">Context engineering</span>
+          <span class="chip">ML foundations</span>
+          <span class="chip">Robotics</span>
+          <span class="chip">Medicine</span>
+          <span class="chip">Biology</span>
+        </div>
+        <p class="body-text" style="margin-top:20px">Open source: <strong>github/spec-kit</strong> contributor — 40+ commits.</p>
+      </section>
+      <footer aria-label="Kontakt">
+        <div class="social">
+          <a href="https://github.com/marcelsafin" aria-label="GitHub" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.17c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.35.77 1.05.77 2.12v3.15c0 .3.21.67.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+          </a>
+          <a href="https://www.linkedin.com/in/marcelsafin/" aria-label="LinkedIn" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+          </a>
+          <a href="mailto:marsel@mynextcode.se" aria-label="E-post: marsel@mynextcode.se">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          </a>
+        </div>
+        <p class="footer-note">BUILT WITH GITHUB COPILOT · LIVE WEBGL</p>
+      </footer>
+    </main>
+    <button id="theme-toggle" type="button" aria-label="Växla tema">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+    </button>
+    <script type="module" src="./web3d.mjs"></script>
+  </body>
+</html>
