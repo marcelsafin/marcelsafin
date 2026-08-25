@@ -1,0 +1,231 @@
+name: Build profile
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "data/profile.json"
+      - "scripts/**"
+      - "tests/**"
+      - ".github/workflows/update-profile.yml"
+
+permissions: {}
+
+concurrency:
+  group: build-profile
+  cancel-in-progress: false
+
+jobs:
+  test:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+  generate:
+    needs: test
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
+    outputs:
+      base-sha: ${{ steps.base.outputs.sha }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Capture base SHA
+        id: base
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate profile
+        run: npm run generate
+
+      - name: Upload generated profile
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: generated-profile
+          path: |
+            README.md
+            assets/companion-light.png
+            assets/companion-dark.png
+            assets/hero-light.png
+            assets/hero-dark.png
+            assets/hero-mobile-light.png
+            assets/hero-mobile-dark.png
+            assets/timeline-light.png
+            assets/timeline-dark.png
+            assets/timeline-mobile-light.png
+            assets/timeline-mobile-dark.png
+          retention-days: 1
+          if-no-files-found: error
+
+  publish:
+    needs: generate
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: true
+
+      - name: Download generated profile
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: generated-profile
+          path: ${{ runner.temp }}/generated-profile
+
+      - name: Validate generated artifact
+        env:
+          GENERATED_PROFILE_DIR: ${{ runner.temp }}/generated-profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact="$GENERATED_PROFILE_DIR"
+
+          if [[ ! -d "$artifact" || -L "$artifact" ]]; then
+            echo "Generated artifact directory is missing, non-directory, or symlinked." >&2
+            exit 1
+          fi
+          if [[ ! -d "$artifact/assets" || -L "$artifact/assets" ]]; then
+            echo "Generated artifact assets directory is missing, non-directory, or symlinked." >&2
+            exit 1
+          fi
+          expected_files=(
+            "README.md"
+            "assets/companion-light.png"
+            "assets/companion-dark.png"
+            "assets/hero-light.png"
+            "assets/hero-dark.png"
+            "assets/hero-mobile-light.png"
+            "assets/hero-mobile-dark.png"
+            "assets/timeline-light.png"
+            "assets/timeline-dark.png"
+            "assets/timeline-mobile-light.png"
+            "assets/timeline-mobile-dark.png"
+          )
+
+          for relative in "${expected_files[@]}"; do
+            path="$artifact/$relative"
+            if [[ ! -f "$path" || -L "$path" ]]; then
+              echo "Generated artifact file is missing, non-regular, or symlinked: $relative" >&2
+              exit 1
+            fi
+          done
+
+          while IFS= read -r -d '' entry; do
+            relative="${entry#"$artifact"/}"
+            case "$relative" in
+              assets)
+                ;;
+              README.md|assets/companion-light.png|assets/companion-dark.png|assets/hero-light.png|assets/hero-dark.png|assets/hero-mobile-light.png|assets/hero-mobile-dark.png|assets/timeline-light.png|assets/timeline-dark.png|assets/timeline-mobile-light.png|assets/timeline-mobile-dark.png)
+                ;;
+              *)
+                echo "Unexpected file or directory in generated artifact: $relative" >&2
+                exit 1
+                ;;
+            esac
+          done < <(find -P "$artifact" -mindepth 1 -print0)
+
+      - name: Verify source head
+        env:
+          EXPECTED_BASE_SHA: ${{ needs.generate.outputs.base-sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_sha="$(git rev-parse HEAD)"
+          if [[ "$current_sha" != "$EXPECTED_BASE_SHA" ]]; then
+            echo "Default branch advanced during generation; refusing to publish generated profile." >&2
+            echo "Expected base SHA $EXPECTED_BASE_SHA, found $current_sha." >&2
+            exit 1
+          fi
+
+      - name: Copy generated profile
+        env:
+          GENERATED_PROFILE_DIR: ${{ runner.temp }}/generated-profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f README.md || -L README.md ]]; then
+            echo "Checkout README.md must be an existing regular file, not a symlink." >&2
+            exit 1
+          fi
+          if [[ ! -d assets || -L assets ]]; then
+            echo "Checkout assets must be an existing real directory, not a symlink." >&2
+            exit 1
+          fi
+          for filename in companion-light.png companion-dark.png hero-light.png hero-dark.png hero-mobile-light.png hero-mobile-dark.png timeline-light.png timeline-dark.png timeline-mobile-light.png timeline-mobile-dark.png; do
+            destination="assets/$filename"
+            if [[ -L "$destination" || ( -e "$destination" && ! -f "$destination" ) ]]; then
+              echo "Checkout destination must be a regular file or absent: $destination" >&2
+              exit 1
+            fi
+          done
+          cp -- "$GENERATED_PROFILE_DIR/README.md" README.md
+          cp -- "$GENERATED_PROFILE_DIR/assets/companion-light.png" assets/companion-light.png
+          cp -- "$GENERATED_PROFILE_DIR/assets/companion-dark.png" assets/companion-dark.png
+          cp -- "$GENERATED_PROFILE_DIR/assets/hero-light.png" assets/hero-light.png
+          cp -- "$GENERATED_PROFILE_DIR/assets/hero-dark.png" assets/hero-dark.png
+          cp -- "$GENERATED_PROFILE_DIR/assets/hero-mobile-light.png" assets/hero-mobile-light.png
+          cp -- "$GENERATED_PROFILE_DIR/assets/hero-mobile-dark.png" assets/hero-mobile-dark.png
+          cp -- "$GENERATED_PROFILE_DIR/assets/timeline-light.png" assets/timeline-light.png
+          cp -- "$GENERATED_PROFILE_DIR/assets/timeline-dark.png" assets/timeline-dark.png
+          cp -- "$GENERATED_PROFILE_DIR/assets/timeline-mobile-light.png" assets/timeline-mobile-light.png
+          cp -- "$GENERATED_PROFILE_DIR/assets/timeline-mobile-dark.png" assets/timeline-mobile-dark.png
+
+      - name: Commit generated changes
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md assets/companion-light.png assets/companion-dark.png assets/hero-light.png assets/hero-dark.png assets/hero-mobile-light.png assets/hero-mobile-dark.png assets/timeline-light.png assets/timeline-dark.png assets/timeline-mobile-light.png assets/timeline-mobile-dark.png
+          if git diff --cached --quiet; then
+            echo "Generated profile is already current."
+            exit 0
+          fi
+          git commit \
+            -m "chore: rebuild profile" \
+            -m "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          git push origin "HEAD:$DEFAULT_BRANCH"
