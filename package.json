@@ -1,0 +1,20 @@
+{
+  "name": "marcelsafin-github-profile",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "generate": "node scripts/generate-profile.mjs",
+    "generate:assets": "node scripts/render-static-assets.mjs",
+    "check": "npm test && npm run generate"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.62.1",
+    "pngjs": "^7.0.0",
+    "three": "^0.185.1"
+  }
+}

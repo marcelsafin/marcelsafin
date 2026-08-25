@@ -1,0 +1,13 @@
+.DS_Store
+node_modules/
+*.tmp-*
+*.tmp.mjs
+coverage/
+
+# Internt arbetsmaterial — publiceras inte
+.planning/
+docs/
+UI-REVIEW.md
+marselsafin-site-audit.md
+origin-story-readme-*.png
+.atomic-test-*/
