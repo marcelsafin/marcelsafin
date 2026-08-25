@@ -375,12 +375,11 @@ function drawTimelineSpine(context, width, dark) {
   context.restore();
 }
 
-async function renderHero(dark, mobile, companionDataUrl) {
+function drawHeroBackdrop(context, dark, mobile) {
   const width = mobile ? 900 : 1200;
   const height = mobile ? 1120 : 760;
   const theme = dark ? PALETTE.dark : PALETTE.light;
   const layout = mobile ? HERO_LAYOUTS.mobile : HERO_LAYOUTS.desktop;
-  const { canvas, context } = makeCanvas(width, height);
   drawBase(context, width, height, dark);
 
   context.fillStyle = theme.foreground;
@@ -423,7 +422,7 @@ async function renderHero(dark, mobile, companionDataUrl) {
   const snapshot = document.createElement("canvas");
   snapshot.width = width;
   snapshot.height = height;
-  snapshot.getContext("2d").drawImage(canvas, 0, 0);
+  snapshot.getContext("2d").drawImage(context.canvas, 0, 0);
   context.save();
   context.filter = `blur(${mobile ? 28 : 22}px)`;
   context.globalAlpha = dark ? 0.96 : 0.86;
@@ -467,16 +466,11 @@ async function renderHero(dark, mobile, companionDataUrl) {
   halo.addColorStop(1, "rgba(139,100,246,0)");
   context.fillStyle = halo;
   context.fillRect(0, mobile ? 160 : 84, width, mobile ? 700 : 540);
+}
 
-  const companion = await loadImage(companionDataUrl);
-  context.drawImage(
-    companion,
-    layout.companion.x,
-    layout.companion.y,
-    layout.companion.width,
-    layout.companion.height,
-  );
-
+function drawHeroCard(context, dark, mobile) {
+  const theme = dark ? PALETTE.dark : PALETTE.light;
+  const layout = mobile ? HERO_LAYOUTS.mobile : HERO_LAYOUTS.desktop;
   const card = {
     ...layout.originCard,
     radius: mobile ? 34 : 30,
@@ -510,8 +504,107 @@ async function renderHero(dark, mobile, companionDataUrl) {
     card.x + 34,
     card.y + (mobile ? 112 : 72),
   );
+}
 
+async function renderHero(dark, mobile, companionDataUrl) {
+  const width = mobile ? 900 : 1200;
+  const height = mobile ? 1120 : 760;
+  const layout = mobile ? HERO_LAYOUTS.mobile : HERO_LAYOUTS.desktop;
+  const { canvas, context } = makeCanvas(width, height);
+  drawHeroBackdrop(context, dark, mobile);
+
+  const companion = await loadImage(companionDataUrl);
+  context.drawImage(
+    companion,
+    layout.companion.x,
+    layout.companion.y,
+    layout.companion.width,
+    layout.companion.height,
+  );
+
+  drawHeroCard(context, dark, mobile);
   return canvas.toDataURL("image/png");
+}
+
+function createCompanionAnimationScene(dark) {
+  const { canvas, renderer } = createRenderer(1600, 1600, true);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+  camera.position.set(0, 0.08, 6.6);
+  camera.lookAt(0, -0.02, 0);
+
+  const key = new THREE.DirectionalLight(0xffffff, dark ? 4.2 : 3.1);
+  key.position.set(-3.2, 4.6, 5.2);
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0x5f97ff, 3.2);
+  fill.position.set(4.4, 1.2, 3.6);
+  scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xd466ab, 2.8);
+  rim.position.set(-4, -2.4, -1.6);
+  scene.add(rim);
+  scene.add(new THREE.HemisphereLight(
+    dark ? 0x8b64f6 : 0xffffff,
+    dark ? 0x0d1015 : 0xcbd5e1,
+    dark ? 1.4 : 2.2,
+  ));
+
+  const companion = createCompanion(dark);
+  scene.add(companion);
+  const apertureBars = companion.getObjectByName("signal-aperture").children;
+  const glints = [];
+  companion.traverse((node) => {
+    if (node.name.endsWith("-glass") || node.geometry?.type === "CapsuleGeometry") {
+      glints.push(node);
+    }
+  });
+
+  return { canvas, renderer, scene, camera, companion, apertureBars, glints };
+}
+
+// Loop-perfect web3d motion: 1 bob, 2 glint, and 3 aperture cycles per loop.
+function renderHeroAnimation({ dark, frames }) {
+  const width = 1200;
+  const height = 760;
+  const layout = HERO_LAYOUTS.desktop;
+
+  const backdrop = makeCanvas(width, height);
+  drawHeroBackdrop(backdrop.context, dark, false);
+  const cardOverlay = makeCanvas(width, height);
+  drawHeroCard(cardOverlay.context, dark, false);
+
+  const stage = createCompanionAnimationScene(dark);
+  const { canvas: frameCanvas, context } = makeCanvas(width, height);
+  const output = [];
+
+  for (let index = 0; index < frames; index += 1) {
+    const phase = (Math.PI * 2 * index) / frames;
+    stage.companion.position.y = Math.sin(phase) * 0.12;
+    stage.apertureBars.forEach((bar, barIndex) => {
+      bar.scale.y = 1 + Math.sin(phase * 3 + barIndex * 0.9) * 0.22;
+    });
+    stage.glints.forEach((glint, glintIndex) => {
+      if (glint.material?.emissiveIntensity !== undefined) {
+        glint.material.emissiveIntensity =
+          0.4 + Math.sin(phase * 2 + glintIndex * 1.3) * 0.18;
+      }
+    });
+    stage.renderer.render(stage.scene, stage.camera);
+
+    context.clearRect(0, 0, width, height);
+    context.drawImage(backdrop.canvas, 0, 0);
+    context.drawImage(
+      stage.canvas,
+      layout.companion.x,
+      layout.companion.y,
+      layout.companion.width,
+      layout.companion.height,
+    );
+    context.drawImage(cardOverlay.canvas, 0, 0);
+    output.push(frameCanvas.toDataURL("image/png"));
+  }
+
+  stage.renderer.dispose();
+  return output;
 }
 
 function renderTimeline(dark, mobile, story) {
@@ -629,4 +722,4 @@ async function renderAll(profile) {
   };
 }
 
-window.assetStudio = { renderAll };
+window.assetStudio = { renderAll, renderHeroAnimation };

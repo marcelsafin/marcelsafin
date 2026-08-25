@@ -1,8 +1,8 @@
 <picture>
   <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="./assets/hero-mobile-dark.png">
   <source media="(max-width: 600px) and (prefers-color-scheme: light)" srcset="./assets/hero-mobile-light.png">
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/hero-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="./assets/hero-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/hero-dark.webp">
+  <source media="(prefers-color-scheme: light)" srcset="./assets/hero-light.webp">
   <img width="1200" alt="Marsel Safin with an original AI companion illustration. Built with GitHub Copilot. AI-first development: systems, agents, graphs, and curiosity." src="./assets/hero-light.png">
 </picture>
 

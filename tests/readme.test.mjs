@@ -17,8 +17,8 @@ const profile = validateProfileConfig(
 const expectedAssetReferences = [
   "./assets/hero-mobile-dark.png",
   "./assets/hero-mobile-light.png",
-  "./assets/hero-dark.png",
-  "./assets/hero-light.png",
+  "./assets/hero-dark.webp",
+  "./assets/hero-light.webp",
   "./assets/hero-light.png",
   "./assets/timeline-mobile-dark.png",
   "./assets/timeline-mobile-light.png",
@@ -54,11 +54,11 @@ test("renderProfileReadme renders the AI companion landing hierarchy", () => {
   );
   assert.match(
     output,
-    /<source media="\(prefers-color-scheme: dark\)" srcset="\.\/assets\/hero-dark\.png">/,
+    /<source media="\(prefers-color-scheme: dark\)" srcset="\.\/assets\/hero-dark\.webp">/,
   );
   assert.match(
     output,
-    /<source media="\(prefers-color-scheme: light\)" srcset="\.\/assets\/hero-light\.png">/,
+    /<source media="\(prefers-color-scheme: light\)" srcset="\.\/assets\/hero-light\.webp">/,
   );
   assert.doesNotMatch(output, /hero-static|dashboard\.svg|PROFILE-LIVE/);
 
@@ -305,13 +305,14 @@ test("README and renderer reference only existing refined v2 assets", () => {
   }
 });
 
-test("renderProfileReadme references generated PNG assets only", () => {
+test("renderProfileReadme references generated raster assets only", () => {
   const output = readme.renderProfileReadme(profile);
 
   assert.doesNotMatch(output, /\.svg/);
   for (const name of [
+    "hero-light.webp",
+    "hero-dark.webp",
     "hero-light.png",
-    "hero-dark.png",
     "hero-mobile-light.png",
     "hero-mobile-dark.png",
     "timeline-light.png",

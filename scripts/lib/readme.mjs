@@ -1,7 +1,8 @@
 import { validateProfileConfig } from "./profile-config.mjs";
 
-const HERO_DARK = "./assets/hero-dark.png";
-const HERO_LIGHT = "./assets/hero-light.png";
+const HERO_DARK = "./assets/hero-dark.webp";
+const HERO_LIGHT = "./assets/hero-light.webp";
+const HERO_FALLBACK = "./assets/hero-light.png";
 const HERO_MOBILE_DARK = "./assets/hero-mobile-dark.png";
 const HERO_MOBILE_LIGHT = "./assets/hero-mobile-light.png";
 const TIMELINE_DARK = "./assets/timeline-dark.png";
@@ -66,7 +67,7 @@ function renderHero(identity) {
     `  <source media="(max-width: 600px) and (prefers-color-scheme: light)" srcset="${HERO_MOBILE_LIGHT}">`,
     `  <source media="(prefers-color-scheme: dark)" srcset="${HERO_DARK}">`,
     `  <source media="(prefers-color-scheme: light)" srcset="${HERO_LIGHT}">`,
-    `  <img width="1200" alt="${alt}" src="${HERO_LIGHT}">`,
+    `  <img width="1200" alt="${alt}" src="${HERO_FALLBACK}">`,
     "</picture>",
   ].join("\n");
 }
