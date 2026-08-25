@@ -72,6 +72,86 @@ const ASSET_CONTRACTS = Object.freeze({
     height: 1160,
     transparency: "forbidden",
   }),
+  "stack-light.png": Object.freeze({
+    width: 1200,
+    height: 900,
+    transparency: "forbidden",
+  }),
+  "stack-dark.png": Object.freeze({
+    width: 1200,
+    height: 900,
+    transparency: "forbidden",
+  }),
+  "stack-mobile-light.png": Object.freeze({
+    width: 900,
+    height: 1600,
+    transparency: "forbidden",
+  }),
+  "stack-mobile-dark.png": Object.freeze({
+    width: 900,
+    height: 1600,
+    transparency: "forbidden",
+  }),
+  "opensource-light.png": Object.freeze({
+    width: 1200,
+    height: 360,
+    transparency: "forbidden",
+  }),
+  "opensource-dark.png": Object.freeze({
+    width: 1200,
+    height: 360,
+    transparency: "forbidden",
+  }),
+  "banner-origin-light.png": Object.freeze({
+    width: 1200,
+    height: 180,
+    transparency: "required",
+  }),
+  "banner-origin-dark.png": Object.freeze({
+    width: 1200,
+    height: 180,
+    transparency: "required",
+  }),
+  "banner-stack-light.png": Object.freeze({
+    width: 1200,
+    height: 180,
+    transparency: "required",
+  }),
+  "banner-stack-dark.png": Object.freeze({
+    width: 1200,
+    height: 180,
+    transparency: "required",
+  }),
+  "banner-proof-light.png": Object.freeze({
+    width: 1200,
+    height: 180,
+    transparency: "required",
+  }),
+  "banner-proof-dark.png": Object.freeze({
+    width: 1200,
+    height: 180,
+    transparency: "required",
+  }),
+  "banner-current-light.png": Object.freeze({
+    width: 1200,
+    height: 180,
+    transparency: "required",
+  }),
+  "banner-current-dark.png": Object.freeze({
+    width: 1200,
+    height: 180,
+    transparency: "required",
+  }),
+  "banner-contact-light.png": Object.freeze({
+    width: 1200,
+    height: 180,
+    transparency: "required",
+  }),
+  "banner-contact-dark.png": Object.freeze({
+    width: 1200,
+    height: 180,
+    transparency: "required",
+  }),
 });
 
 export async function buildStaticAssets(profile = config) {
@@ -114,7 +194,7 @@ function validateAssets(assets) {
   }
 
   if (entries.length !== Object.keys(ASSET_CONTRACTS).length) {
-    throw new TypeError("assets must contain the exact ten-file PNG contract");
+    throw new TypeError("assets must contain the exact PNG contract file set");
   }
 
   return entries;

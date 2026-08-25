@@ -17,9 +17,25 @@ const contracts = {
   "timeline-dark.png": [1200, 820, "forbidden"],
   "timeline-mobile-light.png": [900, 1160, "forbidden"],
   "timeline-mobile-dark.png": [900, 1160, "forbidden"],
+  "stack-light.png": [1200, 900, "forbidden"],
+  "stack-dark.png": [1200, 900, "forbidden"],
+  "stack-mobile-light.png": [900, 1600, "forbidden"],
+  "stack-mobile-dark.png": [900, 1600, "forbidden"],
+  "opensource-light.png": [1200, 360, "forbidden"],
+  "opensource-dark.png": [1200, 360, "forbidden"],
+  "banner-origin-light.png": [1200, 180, "required"],
+  "banner-origin-dark.png": [1200, 180, "required"],
+  "banner-stack-light.png": [1200, 180, "required"],
+  "banner-stack-dark.png": [1200, 180, "required"],
+  "banner-proof-light.png": [1200, 180, "required"],
+  "banner-proof-dark.png": [1200, 180, "required"],
+  "banner-current-light.png": [1200, 180, "required"],
+  "banner-current-dark.png": [1200, 180, "required"],
+  "banner-contact-light.png": [1200, 180, "required"],
+  "banner-contact-dark.png": [1200, 180, "required"],
 };
 
-test("buildStaticAssets emits ten validated raster assets", async () => {
+test("buildStaticAssets emits the full validated raster asset set", async () => {
   const assets = await buildStaticAssets();
 
   assert.deepEqual(Object.keys(assets), Object.keys(contracts));

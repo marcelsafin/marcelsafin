@@ -24,6 +24,22 @@ const generatedFiles = [
   "assets/timeline-dark.png",
   "assets/timeline-mobile-light.png",
   "assets/timeline-mobile-dark.png",
+  "assets/stack-light.png",
+  "assets/stack-dark.png",
+  "assets/stack-mobile-light.png",
+  "assets/stack-mobile-dark.png",
+  "assets/opensource-light.png",
+  "assets/opensource-dark.png",
+  "assets/banner-origin-light.png",
+  "assets/banner-origin-dark.png",
+  "assets/banner-stack-light.png",
+  "assets/banner-stack-dark.png",
+  "assets/banner-proof-light.png",
+  "assets/banner-proof-dark.png",
+  "assets/banner-current-light.png",
+  "assets/banner-current-dark.png",
+  "assets/banner-contact-light.png",
+  "assets/banner-contact-dark.png",
 ];
 
 async function createWorkspace() {
@@ -53,7 +69,7 @@ async function snapshotGeneratedFiles(root) {
   );
 }
 
-test("generateProfile writes README and exactly ten static assets locally", async () => {
+test("generateProfile writes README and the full static asset set locally", async () => {
   const root = await createWorkspace();
 
   try {

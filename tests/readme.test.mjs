@@ -20,11 +20,34 @@ const expectedAssetReferences = [
   "./assets/hero-dark.webp",
   "./assets/hero-light.webp",
   "./assets/hero-light.png",
+  "./assets/banner-origin-dark.png",
+  "./assets/banner-origin-light.png",
+  "./assets/banner-origin-light.png",
   "./assets/timeline-mobile-dark.png",
   "./assets/timeline-mobile-light.png",
   "./assets/timeline-dark.png",
   "./assets/timeline-light.png",
   "./assets/timeline-light.png",
+  "./assets/banner-stack-dark.png",
+  "./assets/banner-stack-light.png",
+  "./assets/banner-stack-light.png",
+  "./assets/stack-mobile-dark.png",
+  "./assets/stack-mobile-light.png",
+  "./assets/stack-dark.png",
+  "./assets/stack-light.png",
+  "./assets/stack-light.png",
+  "./assets/banner-proof-dark.png",
+  "./assets/banner-proof-light.png",
+  "./assets/banner-proof-light.png",
+  "./assets/opensource-dark.png",
+  "./assets/opensource-light.png",
+  "./assets/opensource-light.png",
+  "./assets/banner-current-dark.png",
+  "./assets/banner-current-light.png",
+  "./assets/banner-current-light.png",
+  "./assets/banner-contact-dark.png",
+  "./assets/banner-contact-light.png",
+  "./assets/banner-contact-light.png",
 ];
 
 function extractAssetReferences(markdown) {
@@ -63,20 +86,20 @@ test("renderProfileReadme renders the AI companion landing hierarchy", () => {
   assert.doesNotMatch(output, /hero-static|dashboard\.svg|PROFILE-LIVE/);
 
   const sections = [
-    "<strong>01 / ORIGIN</strong>",
-    "THE PATH",
+    'alt="01 / ORIGIN — The path."',
     "I wanted to understand how machines are built.",
     "Frontend became my entry into software.",
     "Using AI became AI-first development.",
     "I am following the systems underneath the tools.",
-    "<strong>02 / PROOF</strong>",
+    'alt="02 / STACK — Tools I work with."',
+    'alt="03 / PROOF — Proof of work."',
     "<h3>Front End Developer</h3>",
     "<h3>How I build</h3>",
     "Open source contributions",
-    "<strong>03 / CURRENT</strong>",
+    'alt="04 / CURRENT — Questions I chase."',
     "<h3>Currently exploring</h3>",
     "<h3>Long-term questions</h3>",
-    "<strong>04 / CONTACT</strong>",
+    'alt="05 / CONTACT — Reach me."',
     '<a href="https://github.com/marcelsafin">GitHub</a> · <a href="https://www.linkedin.com/in/marcelsafin/">LinkedIn</a> · <a href="mailto:marsel@mynextcode.se">Email</a>',
   ];
   let previousIndex = -1;
@@ -89,10 +112,10 @@ test("renderProfileReadme renders the AI companion landing hierarchy", () => {
 
   assert.doesNotMatch(output, /path-(?:light|dark)\.svg/);
   assert.equal((output.match(/<table\b/g) ?? []).length, 0);
-  assert.equal((output.match(/<picture>/g) ?? []).length, 2);
+  assert.equal((output.match(/<picture>/g) ?? []).length, 9);
   assert.equal((output.match(/<ol>|<li>/g) ?? []).length, 0);
   assert.doesNotMatch(output, /timeline-node-/);
-  assert.equal((output.match(/<h2>/g) ?? []).length, 4);
+  assert.equal((output.match(/<h2>/g) ?? []).length, 0);
   assert.equal((output.match(/<h3>/g) ?? []).length, 9);
   assert.equal((output.match(/<h1>/g) ?? []).length, 1);
   assert.match(output, /<h1>Marsel Safin — AI-first developer<\/h1>/);
@@ -125,7 +148,7 @@ test("renderProfileReadme renders the AI companion landing hierarchy", () => {
   );
   assert.match(
     output,
-    /<p><strong>01 \/ ORIGIN<\/strong><\/p>\n<h2>THE PATH<\/h2>/,
+    /<a id="the-path"><\/a>\n<picture>\n\s+<source media="\(prefers-color-scheme: dark\)" srcset="\.\/assets\/banner-origin-dark\.png">/,
   );
   assert.match(
     output,
@@ -319,6 +342,22 @@ test("renderProfileReadme references generated raster assets only", () => {
     "timeline-dark.png",
     "timeline-mobile-light.png",
     "timeline-mobile-dark.png",
+    "stack-light.png",
+    "stack-dark.png",
+    "stack-mobile-light.png",
+    "stack-mobile-dark.png",
+    "opensource-light.png",
+    "opensource-dark.png",
+    "banner-origin-light.png",
+    "banner-origin-dark.png",
+    "banner-stack-light.png",
+    "banner-stack-dark.png",
+    "banner-proof-light.png",
+    "banner-proof-dark.png",
+    "banner-current-light.png",
+    "banner-current-dark.png",
+    "banner-contact-light.png",
+    "banner-contact-dark.png",
   ]) {
     assert.match(output, new RegExp(`assets/${name.replace(".", "\\.")}`));
   }
@@ -375,7 +414,7 @@ test("renderProfileReadme escapes hostile plain text without adding Markdown str
   assert.doesNotMatch(output, /^\|.*\|$/m);
   assert.doesNotMatch(output, /href="javascript:/);
   assert.equal((output.match(/<table\b/g) ?? []).length, 0);
-  assert.equal((output.match(/<h2>/g) ?? []).length, 4);
+  assert.equal((output.match(/<h2>/g) ?? []).length, 0);
   assert.equal((output.match(/<h3>/g) ?? []).length, 9);
   assert.equal((output.match(/\]\(<(?:https|mailto):/g) ?? []).length, 0);
   assert.equal((output.match(/<a href="https:/g) ?? []).length, 6);

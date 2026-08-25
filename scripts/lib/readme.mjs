@@ -9,6 +9,12 @@ const TIMELINE_DARK = "./assets/timeline-dark.png";
 const TIMELINE_LIGHT = "./assets/timeline-light.png";
 const TIMELINE_MOBILE_DARK = "./assets/timeline-mobile-dark.png";
 const TIMELINE_MOBILE_LIGHT = "./assets/timeline-mobile-light.png";
+const STACK_DARK = "./assets/stack-dark.png";
+const STACK_LIGHT = "./assets/stack-light.png";
+const STACK_MOBILE_DARK = "./assets/stack-mobile-dark.png";
+const STACK_MOBILE_LIGHT = "./assets/stack-mobile-light.png";
+const OPEN_SOURCE_DARK = "./assets/opensource-dark.png";
+const OPEN_SOURCE_LIGHT = "./assets/opensource-light.png";
 const STORY_META = [
   "LATE 2023 / CURIOSITY",
   "2024 / EDUCATION",
@@ -45,6 +51,7 @@ export function renderProfileReadme(config) {
     renderHero(profile.identity),
     renderIdentity(profile.identity),
     renderPath(profile.story),
+    renderStack(),
     renderProof(profile.education, profile.howIBuild, profile.openSource),
     renderCurrentAndFuture(
       profile.currentlyExploring,
@@ -56,20 +63,45 @@ export function renderProfileReadme(config) {
   return `${sections.join("\n\n")}\n`;
 }
 
-function renderHero(identity) {
-  const alt = escapeHtmlAttribute(
-    "Marsel Safin with an original AI companion illustration. Built with GitHub Copilot. AI-first development: systems, agents, graphs, and curiosity.",
+function themedPicture({ dark, light, fallback, alt, mobileDark, mobileLight }) {
+  const sources = [];
+  if (mobileDark && mobileLight) {
+    sources.push(
+      `  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="${mobileDark}">`,
+      `  <source media="(max-width: 600px) and (prefers-color-scheme: light)" srcset="${mobileLight}">`,
+    );
+  }
+  sources.push(
+    `  <source media="(prefers-color-scheme: dark)" srcset="${dark}">`,
+    `  <source media="(prefers-color-scheme: light)" srcset="${light}">`,
   );
 
   return [
     "<picture>",
-    `  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="${HERO_MOBILE_DARK}">`,
-    `  <source media="(max-width: 600px) and (prefers-color-scheme: light)" srcset="${HERO_MOBILE_LIGHT}">`,
-    `  <source media="(prefers-color-scheme: dark)" srcset="${HERO_DARK}">`,
-    `  <source media="(prefers-color-scheme: light)" srcset="${HERO_LIGHT}">`,
-    `  <img width="1200" alt="${alt}" src="${HERO_FALLBACK}">`,
+    ...sources,
+    `  <img width="1200" alt="${escapeHtmlAttribute(alt)}" src="${fallback}">`,
     "</picture>",
   ].join("\n");
+}
+
+function bannerPicture(name, alt) {
+  return themedPicture({
+    dark: `./assets/banner-${name}-dark.png`,
+    light: `./assets/banner-${name}-light.png`,
+    fallback: `./assets/banner-${name}-light.png`,
+    alt,
+  });
+}
+
+function renderHero(identity) {
+  return themedPicture({
+    mobileDark: HERO_MOBILE_DARK,
+    mobileLight: HERO_MOBILE_LIGHT,
+    dark: HERO_DARK,
+    light: HERO_LIGHT,
+    fallback: HERO_FALLBACK,
+    alt: "Marsel Safin with an original AI companion illustration. Built with GitHub Copilot. AI-first development: systems, agents, graphs, and curiosity.",
+  });
 }
 
 function renderIdentity(identity) {
@@ -95,16 +127,30 @@ function renderPath(story) {
 
   return [
     '<a id="the-path"></a>',
-    "<p><strong>01 / ORIGIN</strong></p>",
-    "<h2>THE PATH</h2>",
-    "<picture>",
-    `  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="${TIMELINE_MOBILE_DARK}">`,
-    `  <source media="(max-width: 600px) and (prefers-color-scheme: light)" srcset="${TIMELINE_MOBILE_LIGHT}">`,
-    `  <source media="(prefers-color-scheme: dark)" srcset="${TIMELINE_DARK}">`,
-    `  <source media="(prefers-color-scheme: light)" srcset="${TIMELINE_LIGHT}">`,
-    `  <img width="1200" alt="" src="${TIMELINE_LIGHT}">`,
-    "</picture>",
+    bannerPicture("origin", "01 / ORIGIN — The path."),
+    themedPicture({
+      mobileDark: TIMELINE_MOBILE_DARK,
+      mobileLight: TIMELINE_MOBILE_LIGHT,
+      dark: TIMELINE_DARK,
+      light: TIMELINE_LIGHT,
+      fallback: TIMELINE_LIGHT,
+      alt: "",
+    }),
     ...entries,
+  ].join("\n");
+}
+
+function renderStack() {
+  return [
+    bannerPicture("stack", "02 / STACK — Tools I work with."),
+    themedPicture({
+      mobileDark: STACK_MOBILE_DARK,
+      mobileLight: STACK_MOBILE_LIGHT,
+      dark: STACK_DARK,
+      light: STACK_LIGHT,
+      fallback: STACK_LIGHT,
+      alt: "Frontend: React, Next.js, TypeScript, Tailwind. Backend: Python, FastAPI, C# and .NET, Node.js. DevOps and CI/CD: Docker, Azure DevOps, GitHub Actions, Linux. Testing and tools: Playwright, PostgreSQL, Git, Figma.",
+    }),
   ].join("\n");
 }
 
@@ -119,9 +165,7 @@ function renderProof(education, howIBuild, openSource) {
   });
 
   return [
-    "<hr>",
-    "<p><strong>02 / PROOF</strong></p>",
-    "<h2>Proof</h2>",
+    bannerPicture("proof", "03 / PROOF — Proof of work."),
     `<h3>${escapeHtmlText(education.program)}</h3>`,
     `<p><strong>${education.yhPoints}&nbsp;YH-poäng / EDUCATION / FOUNDATIONS</strong></p>`,
     `<p>${education.areas.map(escapeHtmlText).join(" · ")}</p>`,
@@ -132,16 +176,19 @@ function renderProof(education, howIBuild, openSource) {
     `<p>${howIBuild.capabilities.map(escapeHtmlText).join(" · ")}</p>`,
     "<hr>",
     "<h3>Open source contributions</h3>",
-    "<p><strong>OPEN SOURCE / PUBLIC PROOF</strong></p>",
+    themedPicture({
+      dark: OPEN_SOURCE_DARK,
+      light: OPEN_SOURCE_LIGHT,
+      fallback: OPEN_SOURCE_LIGHT,
+      alt: "Merged pull requests across public repositories.",
+    }),
     ...contributions,
   ].join("\n");
 }
 
 function renderCurrentAndFuture(currentlyExploring, longTermQuestions) {
   return [
-    "<hr>",
-    "<p><strong>03 / CURRENT</strong></p>",
-    "<h2>Questions</h2>",
+    bannerPicture("current", "04 / CURRENT — Questions I chase."),
     "<h3>Currently exploring</h3>",
     "<p><strong>NEAR TERM / TECHNICAL DEPTH</strong></p>",
     `<p>${currentlyExploring.map(escapeHtmlText).join(" · ")}</p>`,
@@ -160,9 +207,7 @@ function renderContacts(contacts) {
   ].join(" · ");
 
   return [
-    "<hr>",
-    "<p><strong>04 / CONTACT</strong></p>",
-    "<h2>Contact</h2>",
+    bannerPicture("contact", "05 / CONTACT — Reach me."),
     `<p><strong>${links}</strong></p>`,
   ].join("\n\n");
 }
