@@ -17,6 +17,7 @@
 <p><strong><a href="#user-content-the-path">Explore the origin story →</a></strong></p>
 
 <a id="the-path"></a>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./assets/banner-origin-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="./assets/banner-origin-light.png">

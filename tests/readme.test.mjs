@@ -148,7 +148,7 @@ test("renderProfileReadme renders the AI companion landing hierarchy", () => {
   );
   assert.match(
     output,
-    /<a id="the-path"><\/a>\n<picture>\n\s+<source media="\(prefers-color-scheme: dark\)" srcset="\.\/assets\/banner-origin-dark\.png">/,
+    /<a id="the-path"><\/a>\n\n<picture>\n\s+<source media="\(prefers-color-scheme: dark\)" srcset="\.\/assets\/banner-origin-dark\.png">/,
   );
   assert.match(
     output,

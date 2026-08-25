@@ -126,7 +126,7 @@ function renderPath(story) {
   ]);
 
   return [
-    '<a id="the-path"></a>',
+    '<a id="the-path"></a>\n',
     bannerPicture("origin", "01 / ORIGIN — The path."),
     themedPicture({
       mobileDark: TIMELINE_MOBILE_DARK,
