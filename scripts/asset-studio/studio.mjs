@@ -14,14 +14,30 @@ import {
 const PALETTE = {
   dark: RASTER_THEMES.dark,
   light: RASTER_THEMES.light,
-  blue: RASTER_ACCENTS.blue,
-  blueViolet: RASTER_ACCENTS.blueViolet,
   violet: RASTER_ACCENTS.violet,
-  pink: RASTER_ACCENTS.pink,
+  lilac: RASTER_ACCENTS.lilac,
+  violetDeep: RASTER_ACCENTS.violetDeep,
+  violetInk: RASTER_ACCENTS.violetInk,
 };
 
-const DISPLAY = "Arial, Helvetica, sans-serif";
-const MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+const MONO =
+  '"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+
+// Bundled OFL font keeps typography identical across macOS and CI renders.
+await Promise.all(
+  [
+    ["Regular", "400"],
+    ["SemiBold", "600"],
+    ["Bold", "700"],
+  ].map(async ([name, weight]) => {
+    const face = new FontFace(
+      "IBM Plex Mono",
+      `url(${new URL(`./fonts/IBMPlexMono-${name}.woff2`, import.meta.url)})`,
+      { weight },
+    );
+    document.fonts.add(await face.load());
+  }),
+);
 
 function roundedShape(width, height, radius) {
   const x = -width / 2;
@@ -82,7 +98,7 @@ export function createCompanion(dark) {
 
   const shell = new THREE.Mesh(
     new THREE.SphereGeometry(1.72, 96, 64),
-    material(PALETTE.violet, {
+    material(PALETTE.violetDeep, {
       roughness: 0.2,
       metalness: 0.36,
       clearcoat: 0.9,
@@ -112,7 +128,7 @@ export function createCompanion(dark) {
       0.88,
       0.34,
       0.26,
-      material(side < 0 ? PALETTE.blue : PALETTE.blueViolet, {
+      material(side < 0 ? PALETTE.violet : PALETTE.lilac, {
         roughness: 0.18,
         metalness: 0.38,
         clearcoat: 0.95,
@@ -127,11 +143,11 @@ export function createCompanion(dark) {
       0.52,
       0.22,
       0.18,
-      material(dark ? "#111827" : "#f4f7fb", {
+      material(dark ? "#0f0f0f" : "#fafafa", {
         roughness: 0.08,
         metalness: 0.04,
         clearcoat: 1,
-        emissive: side < 0 ? PALETTE.blue : PALETTE.blueViolet,
+        emissive: side < 0 ? PALETTE.violet : PALETTE.lilac,
         emissiveIntensity: dark ? 0.52 : 0.24,
         opacity: 0.92,
       }),
@@ -142,10 +158,10 @@ export function createCompanion(dark) {
 
     const glint = new THREE.Mesh(
       new THREE.CapsuleGeometry(0.055, 0.28, 8, 18),
-      material("#f1f5f9", {
+      material("#fafafa", {
         roughness: 0.06,
         metalness: 0,
-        emissive: "#f1f5f9",
+        emissive: "#fafafa",
         emissiveIntensity: 0.55,
       }),
     );
@@ -164,7 +180,7 @@ export function createCompanion(dark) {
       0.05,
       material(theme.foreground, {
         roughness: 0.22,
-        emissive: PALETTE.blue,
+        emissive: PALETTE.violet,
         emissiveIntensity: dark ? 0.18 : 0.04,
       }),
     );
@@ -173,7 +189,7 @@ export function createCompanion(dark) {
   }
   root.add(signal);
 
-  const sideMaterial = material(PALETTE.pink, {
+  const sideMaterial = material(PALETTE.violetInk, {
     roughness: 0.24,
     metalness: 0.34,
     clearcoat: 0.8,
@@ -211,6 +227,23 @@ function createRenderer(width, height, alpha) {
   return { canvas, renderer };
 }
 
+function addStudioLights(scene, dark) {
+  const key = new THREE.DirectionalLight(0xffffff, dark ? 4.2 : 3.1);
+  key.position.set(-3.2, 4.6, 5.2);
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0xa78bfa, 3.2);
+  fill.position.set(4.4, 1.2, 3.6);
+  scene.add(fill);
+  const rim = new THREE.DirectionalLight(0x7c3aed, 2.8);
+  rim.position.set(-4, -2.4, -1.6);
+  scene.add(rim);
+  scene.add(new THREE.HemisphereLight(
+    dark ? 0x8b5cf6 : 0xffffff,
+    dark ? 0x050505 : 0xd4d4d4,
+    dark ? 1.4 : 2.2,
+  ));
+}
+
 function renderCompanion(dark) {
   const { canvas, renderer } = createRenderer(1600, 1600, true);
   const scene = new THREE.Scene();
@@ -218,20 +251,7 @@ function renderCompanion(dark) {
   camera.position.set(0, 0.08, 6.6);
   camera.lookAt(0, -0.02, 0);
 
-  const key = new THREE.DirectionalLight(0xffffff, dark ? 4.2 : 3.1);
-  key.position.set(-3.2, 4.6, 5.2);
-  scene.add(key);
-  const fill = new THREE.DirectionalLight(0x5f97ff, 3.2);
-  fill.position.set(4.4, 1.2, 3.6);
-  scene.add(fill);
-  const rim = new THREE.DirectionalLight(0xd466ab, 2.8);
-  rim.position.set(-4, -2.4, -1.6);
-  scene.add(rim);
-  scene.add(new THREE.HemisphereLight(
-    dark ? 0x8b64f6 : 0xffffff,
-    dark ? 0x0d1015 : 0xcbd5e1,
-    dark ? 1.4 : 2.2,
-  ));
+  addStudioLights(scene, dark);
 
   scene.add(createCompanion(dark));
   renderer.render(scene, camera);
@@ -245,11 +265,6 @@ function makeCanvas(width, height) {
   canvas.width = width;
   canvas.height = height;
   return { canvas, context: canvas.getContext("2d") };
-}
-
-function roundedRect(context, x, y, width, height, radius) {
-  context.beginPath();
-  context.roundRect(x, y, width, height, radius);
 }
 
 function fitLetterSpacing(context, text, targetWidth) {
@@ -272,17 +287,54 @@ function drawBase(context, width, height, dark) {
   context.fillStyle = theme.background;
   context.fillRect(0, 0, width, height);
 
-  const wash = context.createLinearGradient(0, 0, width, height);
-  wash.addColorStop(0, dark ? "rgba(95,151,255,.18)" : "rgba(95,151,255,.13)");
-  wash.addColorStop(0.5, dark ? "rgba(139,100,246,.16)" : "rgba(139,100,246,.1)");
-  wash.addColorStop(1, dark ? "rgba(212,102,171,.12)" : "rgba(212,102,171,.08)");
-  context.fillStyle = wash;
-  context.fillRect(0, 0, width, height);
-
   context.strokeStyle = theme.border;
   context.lineWidth = 2;
-  roundedRect(context, 24, 24, width - 48, height - 48, 34);
+  context.strokeRect(24, 24, width - 48, height - 48);
+
+  context.save();
+  context.globalAlpha = 0.55;
+  context.lineWidth = 1;
+  context.beginPath();
+  for (const x of [44, width - 44]) {
+    context.moveTo(x, 24);
+    context.lineTo(x, height - 24);
+  }
   context.stroke();
+  context.restore();
+}
+
+function drawCornerTicks(context, box, color) {
+  const tick = 18;
+  context.save();
+  context.strokeStyle = color;
+  context.lineWidth = 2;
+  context.beginPath();
+  for (const [cornerX, cornerY, directionX, directionY] of [
+    [box.x, box.y, 1, 1],
+    [box.x + box.width, box.y, -1, 1],
+    [box.x, box.y + box.height, 1, -1],
+    [box.x + box.width, box.y + box.height, -1, -1],
+  ]) {
+    context.moveTo(cornerX + directionX * tick, cornerY);
+    context.lineTo(cornerX, cornerY);
+    context.lineTo(cornerX, cornerY + directionY * tick);
+  }
+  context.stroke();
+  context.restore();
+}
+
+function drawMicroLabel(context, { x, y, number, label, size, dark, tracking }) {
+  const theme = dark ? PALETTE.dark : PALETTE.light;
+  context.save();
+  context.textAlign = "left";
+  context.font = `700 ${size}px ${MONO}`;
+  context.letterSpacing = tracking ?? "2px";
+  context.fillStyle = theme.accent;
+  context.fillText(number, x, y);
+  const numberWidth = context.measureText(`${number} `).width;
+  context.fillStyle = theme.muted;
+  context.fillText(label, x + numberWidth, y);
+  context.restore();
 }
 
 function loadImage(dataUrl) {
@@ -296,13 +348,14 @@ function loadImage(dataUrl) {
 
 function drawMirroredSignals(context, width, dark, mobile) {
   const theme = dark ? PALETTE.dark : PALETTE.light;
+  const fadeOut = dark ? "rgba(192,132,252,0)" : "rgba(124,58,237,0)";
   const inset = mobile ? 54 : 54;
   const reach = mobile ? 180 : 150;
   const startY = mobile ? 300 : 286;
   const stepY = mobile ? 54 : 38;
 
   context.save();
-  context.fillStyle = theme.muted;
+  context.fillStyle = theme.border;
   context.lineWidth = mobile ? 3 : 2;
   for (let index = 0; index < 3; index += 1) {
     const y = startY + index * stepY;
@@ -311,8 +364,8 @@ function drawMirroredSignals(context, width, dark, mobile) {
     const endRight = width - inset - reach - offset;
 
     const signalGradient = context.createLinearGradient(inset, y, endLeft, y);
-    signalGradient.addColorStop(0, theme.muted);
-    signalGradient.addColorStop(1, "rgba(95,151,255,0)");
+    signalGradient.addColorStop(0, theme.border);
+    signalGradient.addColorStop(1, fadeOut);
     context.strokeStyle = signalGradient;
     context.beginPath();
     context.moveTo(inset, y);
@@ -320,51 +373,42 @@ function drawMirroredSignals(context, width, dark, mobile) {
     context.stroke();
 
     const mirroredGradient = context.createLinearGradient(width - inset, y, endRight, y);
-    mirroredGradient.addColorStop(0, theme.muted);
-    mirroredGradient.addColorStop(1, "rgba(139,100,246,0)");
+    mirroredGradient.addColorStop(0, theme.border);
+    mirroredGradient.addColorStop(1, fadeOut);
     context.strokeStyle = mirroredGradient;
     context.beginPath();
     context.moveTo(width - inset, y);
     context.lineTo(endRight, y);
     context.stroke();
 
+    const tick = mobile ? 9 : 7;
     for (const x of [inset, width - inset]) {
-      context.beginPath();
-      context.arc(x, y, mobile ? 5 : 4, 0, Math.PI * 2);
-      context.fill();
+      context.fillRect(x - tick / 2, y - tick / 2, tick, tick);
     }
   }
   context.restore();
 }
 
 function drawAccentEdge(context, card, dark) {
-  const gradient = context.createLinearGradient(
-    card.x,
-    card.y,
-    card.x + card.width,
-    card.y,
-  );
-  gradient.addColorStop(0, "rgba(95,151,255,0)");
-  gradient.addColorStop(0.22, dark ? "rgba(95,151,255,.55)" : "rgba(95,151,255,.5)");
-  gradient.addColorStop(0.5, dark ? "rgba(139,100,246,.6)" : "rgba(139,100,246,.55)");
-  gradient.addColorStop(0.78, dark ? "rgba(212,102,171,.55)" : "rgba(212,102,171,.5)");
-  gradient.addColorStop(1, "rgba(212,102,171,0)");
+  const theme = dark ? PALETTE.dark : PALETTE.light;
   context.save();
-  context.strokeStyle = gradient;
+  context.strokeStyle = theme.accent;
   context.lineWidth = 2;
   context.beginPath();
-  context.moveTo(card.x + card.radius, card.y + 1);
-  context.lineTo(card.x + card.width - card.radius, card.y + 1);
+  context.moveTo(card.x, card.y + 1);
+  context.lineTo(card.x + 180, card.y + 1);
   context.stroke();
   context.restore();
 }
 
 function drawTimelineSpine(context, width, dark) {
+  const solid = dark ? "rgba(192,132,252,.4)" : "rgba(124,58,237,.35)";
+  const clear = dark ? "rgba(192,132,252,0)" : "rgba(124,58,237,0)";
   const gradient = context.createLinearGradient(width / 2, 112, width / 2, 732);
-  gradient.addColorStop(0, "rgba(95,151,255,0)");
-  gradient.addColorStop(0.3, dark ? "rgba(95,151,255,.28)" : "rgba(95,151,255,.22)");
-  gradient.addColorStop(0.7, dark ? "rgba(212,102,171,.28)" : "rgba(212,102,171,.22)");
-  gradient.addColorStop(1, "rgba(212,102,171,0)");
+  gradient.addColorStop(0, clear);
+  gradient.addColorStop(0.3, solid);
+  gradient.addColorStop(0.7, solid);
+  gradient.addColorStop(1, clear);
   context.save();
   context.strokeStyle = gradient;
   context.lineWidth = 2;
@@ -382,23 +426,27 @@ function drawHeroBackdrop(context, dark, mobile) {
   const layout = mobile ? HERO_LAYOUTS.mobile : HERO_LAYOUTS.desktop;
   drawBase(context, width, height, dark);
 
-  context.fillStyle = theme.foreground;
-  context.font = `700 ${
-    mobile
+  drawMicroLabel(context, {
+    x: mobile ? 56 : 58,
+    y: mobile ? 72 : 62,
+    number: "01 /",
+    label: "BUILT WITH GITHUB COPILOT",
+    size: mobile
       ? ASSET_TYPOGRAPHY.hero.mobile.attribution
-      : ASSET_TYPOGRAPHY.hero.desktop.attribution
-  }px ${MONO}`;
-  context.letterSpacing = mobile ? "3px" : "2px";
-  context.fillText("BUILT WITH GITHUB COPILOT", mobile ? 56 : 58, mobile ? 72 : 62);
+      : ASSET_TYPOGRAPHY.hero.desktop.attribution,
+    dark,
+    tracking: mobile ? "3px" : "2px",
+  });
 
+  context.fillStyle = theme.foreground;
   if (mobile) {
-    context.font = `800 86px ${DISPLAY}`;
-    context.letterSpacing = "-4px";
+    context.font = `700 82px ${MONO}`;
+    context.letterSpacing = "-3px";
     context.textAlign = "center";
     context.fillText("MARSEL SAFIN", width / 2, 182);
   } else {
-    context.font = `800 84px ${DISPLAY}`;
-    context.letterSpacing = "-5px";
+    context.font = `700 80px ${MONO}`;
+    context.letterSpacing = "-2px";
     context.textAlign = "left";
     context.fillText("MARSEL", layout.leftTitle.x, 170);
     const rightAnchor = layout.rightTitle.x + layout.rightTitle.width;
@@ -419,72 +467,28 @@ function drawHeroBackdrop(context, dark, mobile) {
 
   drawMirroredSignals(context, width, dark, mobile);
 
-  const snapshot = document.createElement("canvas");
-  snapshot.width = width;
-  snapshot.height = height;
-  snapshot.getContext("2d").drawImage(context.canvas, 0, 0);
-  context.save();
-  context.filter = `blur(${mobile ? 28 : 22}px)`;
-  context.globalAlpha = dark ? 0.96 : 0.86;
-  if (mobile) {
-    context.drawImage(
-      snapshot,
-      layout.blurField.x,
-      layout.blurField.y,
-      layout.blurField.width,
-      layout.blurField.height,
-      layout.blurField.x,
-      layout.blurField.y,
-      layout.blurField.width,
-      layout.blurField.height,
-    );
-  } else {
-    context.drawImage(
-      snapshot,
-      layout.blurField.x,
-      layout.blurField.y,
-      layout.blurField.width,
-      layout.blurField.height,
-      layout.blurField.x,
-      layout.blurField.y,
-      layout.blurField.width,
-      layout.blurField.height,
-    );
-  }
-  context.restore();
-
-  const halo = context.createRadialGradient(
-    width / 2,
-    mobile ? 505 : 350,
-    30,
-    width / 2,
-    mobile ? 505 : 350,
-    mobile ? 330 : 250,
-  );
-  halo.addColorStop(0, dark ? "rgba(95,151,255,.28)" : "rgba(95,151,255,.2)");
-  halo.addColorStop(0.58, dark ? "rgba(139,100,246,.14)" : "rgba(139,100,246,.1)");
-  halo.addColorStop(1, "rgba(139,100,246,0)");
-  context.fillStyle = halo;
-  context.fillRect(0, mobile ? 160 : 84, width, mobile ? 700 : 540);
+  const cell = layout.blurField;
+  context.fillStyle = theme.surface;
+  context.fillRect(cell.x, cell.y, cell.width, cell.height);
+  context.strokeStyle = theme.border;
+  context.lineWidth = 2;
+  context.strokeRect(cell.x, cell.y, cell.width, cell.height);
+  drawCornerTicks(context, cell, theme.accent);
 }
 
 function drawHeroCard(context, dark, mobile) {
   const theme = dark ? PALETTE.dark : PALETTE.light;
   const layout = mobile ? HERO_LAYOUTS.mobile : HERO_LAYOUTS.desktop;
-  const card = {
-    ...layout.originCard,
-    radius: mobile ? 34 : 30,
-  };
-  context.fillStyle = dark ? "rgba(17,24,39,.92)" : "rgba(241,245,249,.94)";
-  roundedRect(context, card.x, card.y, card.width, card.height, card.radius);
-  context.fill();
+  const card = layout.originCard;
+  context.fillStyle = theme.surface;
+  context.fillRect(card.x, card.y, card.width, card.height);
   context.strokeStyle = theme.border;
   context.lineWidth = 2;
-  context.stroke();
+  context.strokeRect(card.x, card.y, card.width, card.height);
   drawAccentEdge(context, card, dark);
 
   context.textAlign = "left";
-  context.fillStyle = theme.muted;
+  context.fillStyle = theme.accent;
   context.font = `700 ${
     mobile
       ? ASSET_TYPOGRAPHY.hero.mobile.railLabel
@@ -497,7 +501,7 @@ function drawHeroCard(context, dark, mobile) {
     card.y + (mobile ? 52 : 36),
   );
   context.fillStyle = theme.foreground;
-  context.font = `700 ${mobile ? 34 : 24}px ${DISPLAY}`;
+  context.font = `600 ${mobile ? 34 : 24}px ${MONO}`;
   context.letterSpacing = "0px";
   context.fillText(
     "Systems · Agents · Graphs · Curiosity",
@@ -533,20 +537,7 @@ function createCompanionAnimationScene(dark) {
   camera.position.set(0, 0.08, 6.6);
   camera.lookAt(0, -0.02, 0);
 
-  const key = new THREE.DirectionalLight(0xffffff, dark ? 4.2 : 3.1);
-  key.position.set(-3.2, 4.6, 5.2);
-  scene.add(key);
-  const fill = new THREE.DirectionalLight(0x5f97ff, 3.2);
-  fill.position.set(4.4, 1.2, 3.6);
-  scene.add(fill);
-  const rim = new THREE.DirectionalLight(0xd466ab, 2.8);
-  rim.position.set(-4, -2.4, -1.6);
-  scene.add(rim);
-  scene.add(new THREE.HemisphereLight(
-    dark ? 0x8b64f6 : 0xffffff,
-    dark ? 0x0d1015 : 0xcbd5e1,
-    dark ? 1.4 : 2.2,
-  ));
+  addStudioLights(scene, dark);
 
   const companion = createCompanion(dark);
   scene.add(companion);
@@ -616,7 +607,7 @@ function renderTimeline(dark, mobile, story) {
   drawBase(context, width, height, dark);
 
   context.fillStyle = theme.foreground;
-  context.font = `800 ${mobile ? 44 : 30}px ${DISPLAY}`;
+  context.font = `700 ${mobile ? 44 : 30}px ${MONO}`;
   context.textAlign = "left";
   context.fillText(
     "Origin story",
@@ -643,7 +634,6 @@ function renderTimeline(dark, mobile, story) {
     "03 / AI SYSTEMS",
     "04 / FOUNDATIONS",
   ];
-  const colors = [PALETTE.blue, PALETTE.blueViolet, PALETTE.violet, PALETTE.pink];
   const panels = mobile
     ? Array.from({ length: 4 }, (_, index) => ({
         ...mobileLayout.firstPanel,
@@ -661,17 +651,14 @@ function renderTimeline(dark, mobile, story) {
   }
 
   panels.forEach((panel, index) => {
-    context.fillStyle = dark ? "rgba(17,24,39,.9)" : "rgba(241,245,249,.94)";
-    roundedRect(context, panel.x, panel.y, panel.width, panel.height, 28);
-    context.fill();
+    context.fillStyle = theme.surface;
+    context.fillRect(panel.x, panel.y, panel.width, panel.height);
     context.strokeStyle = theme.border;
     context.lineWidth = 2;
-    context.stroke();
+    context.strokeRect(panel.x, panel.y, panel.width, panel.height);
 
-    context.fillStyle = colors[index];
-    context.beginPath();
-    context.arc(panel.x + 38, panel.y + 40, 10, 0, Math.PI * 2);
-    context.fill();
+    context.fillStyle = theme.accent;
+    context.fillRect(panel.x + 30, panel.y + 30, 14, 14);
 
     context.textAlign = "left";
     context.fillStyle = theme.muted;
@@ -682,14 +669,14 @@ function renderTimeline(dark, mobile, story) {
     }px ${MONO}`;
     context.fillText(labels[index], panel.x + 66, panel.y + 47);
     context.fillStyle = theme.foreground;
-    context.font = `800 ${mobile ? 54 : 42}px ${DISPLAY}`;
+    context.font = `700 ${mobile ? 54 : 42}px ${MONO}`;
     context.fillText(years[index], panel.x + 34, panel.y + (mobile ? 112 : 116));
 
-    context.font = `700 ${
+    context.font = `600 ${
       mobile
         ? ASSET_TYPOGRAPHY.timeline.mobile.title
         : ASSET_TYPOGRAPHY.timeline.desktop.title
-    }px ${DISPLAY}`;
+    }px ${MONO}`;
     const titleX = panel.x + (mobile ? 210 : 176);
     const titleY = panel.y + (mobile ? 105 : 108);
     const lines = wrapWords(
@@ -705,9 +692,180 @@ function renderTimeline(dark, mobile, story) {
   return canvas.toDataURL("image/png");
 }
 
+const BANNERS = Object.freeze({
+  origin: Object.freeze({ number: "01", label: "ORIGIN", heading: "The path." }),
+  stack: Object.freeze({ number: "02", label: "STACK", heading: "Tools I work with." }),
+  proof: Object.freeze({ number: "03", label: "PROOF", heading: "Proof of work." }),
+  current: Object.freeze({ number: "04", label: "CURRENT", heading: "Questions I chase." }),
+  contact: Object.freeze({ number: "05", label: "CONTACT", heading: "Reach me." }),
+});
+
+const STACK_GROUPS = Object.freeze([
+  ["FRONTEND", ["React", "Next.js", "TypeScript", "Tailwind"]],
+  ["BACKEND", ["Python", "FastAPI", "C# / .NET", "Node.js"]],
+  ["DEVOPS & CI/CD", ["Docker", "Azure DevOps", "GitHub Actions", "Linux"]],
+  ["TESTING & TOOLS", ["Playwright", "PostgreSQL", "Git", "Figma"]],
+]);
+
+// Transparent banner so the section header sits directly on GitHub's page.
+function renderBanner(dark, { number, label, heading }) {
+  const width = 1200;
+  const height = 180;
+  const theme = dark ? PALETTE.dark : PALETTE.light;
+  const { canvas, context } = makeCanvas(width, height);
+
+  context.strokeStyle = theme.border;
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(0, 1);
+  context.lineTo(width, 1);
+  context.stroke();
+  context.strokeStyle = theme.accent;
+  context.beginPath();
+  context.moveTo(0, 1);
+  context.lineTo(120, 1);
+  context.stroke();
+
+  drawMicroLabel(context, {
+    x: 2,
+    y: 66,
+    number,
+    label: `/ ${label}`,
+    size: 16,
+    dark,
+    tracking: "4px",
+  });
+
+  context.fillStyle = theme.foreground;
+  context.font = `700 54px ${MONO}`;
+  context.letterSpacing = "-1px";
+  context.textAlign = "left";
+  context.fillText(heading, 2, 142);
+
+  return canvas.toDataURL("image/png");
+}
+
+function renderStack(dark, mobile) {
+  const width = mobile ? 900 : 1200;
+  const height = mobile ? 1600 : 900;
+  const theme = dark ? PALETTE.dark : PALETTE.light;
+  const { canvas, context } = makeCanvas(width, height);
+  drawBase(context, width, height, dark);
+
+  const margin = mobile ? 54 : 64;
+  const gap = 16;
+  const columns = mobile ? 2 : 4;
+  const cellWidth = (width - margin * 2 - gap * (columns - 1)) / columns;
+  const cellHeight = mobile ? 140 : 124;
+  const labelSize = mobile ? 28 : 15;
+  const nameSize = mobile ? 26 : 17;
+  const groupStep = mobile ? 372 : 200;
+  let y = mobile ? 96 : 92;
+
+  for (const [category, tools] of STACK_GROUPS) {
+    context.textAlign = "left";
+    context.fillStyle = theme.accent;
+    context.font = `700 ${labelSize}px ${MONO}`;
+    context.letterSpacing = "3px";
+    context.fillText(category, margin, y);
+
+    tools.forEach((tool, index) => {
+      const column = index % columns;
+      const row = Math.floor(index / columns);
+      const x = margin + column * (cellWidth + gap);
+      const top = y + 24 + row * (cellHeight + gap);
+
+      context.fillStyle = theme.surface;
+      context.fillRect(x, top, cellWidth, cellHeight);
+      context.strokeStyle = theme.border;
+      context.lineWidth = 2;
+      context.strokeRect(x, top, cellWidth, cellHeight);
+
+      context.fillStyle = theme.foreground;
+      context.font = `600 ${nameSize}px ${MONO}`;
+      context.letterSpacing = "2px";
+      context.textAlign = "center";
+      context.fillText(
+        tool.toUpperCase(),
+        x + cellWidth / 2,
+        top + cellHeight / 2 + nameSize * 0.36,
+      );
+    });
+
+    y += groupStep;
+  }
+
+  return canvas.toDataURL("image/png");
+}
+
+function renderOpenSource(dark, openSource) {
+  const width = 1200;
+  const height = 360;
+  const theme = dark ? PALETTE.dark : PALETTE.light;
+  const { canvas, context } = makeCanvas(width, height);
+  drawBase(context, width, height, dark);
+
+  drawMicroLabel(context, {
+    x: 64,
+    y: 76,
+    number: "OPEN SOURCE",
+    label: "/ PUBLIC PROOF",
+    size: 15,
+    dark,
+    tracking: "3px",
+  });
+
+  const margin = 64;
+  const gap = 16;
+  const cardWidth = (width - margin * 2 - gap * 3) / 4;
+  const cardY = 104;
+  const cardHeight = 192;
+
+  openSource.forEach((entry, index) => {
+    const x = margin + index * (cardWidth + gap);
+    context.fillStyle = theme.surface;
+    context.fillRect(x, cardY, cardWidth, cardHeight);
+    context.strokeStyle = theme.border;
+    context.lineWidth = 2;
+    context.strokeRect(x, cardY, cardWidth, cardHeight);
+
+    const countMatch = /^(\d+) merged PRs?$/u.exec(entry.signal);
+    const count = countMatch ? countMatch[1] : entry.signal;
+    const slash = entry.label.indexOf("/");
+    const owner = entry.label.slice(0, slash + 1);
+    const name = entry.label.slice(slash + 1);
+
+    context.textAlign = "left";
+    context.fillStyle = theme.accent;
+    context.font = `700 52px ${MONO}`;
+    context.letterSpacing = "0px";
+    context.fillText(count, x + 24, cardY + 82);
+
+    context.fillStyle = theme.muted;
+    context.font = `700 12px ${MONO}`;
+    context.letterSpacing = "3px";
+    context.fillText(count === "1" ? "MERGED PR" : "MERGED PRS", x + 24, cardY + 112);
+
+    context.font = `400 14px ${MONO}`;
+    context.letterSpacing = "0px";
+    context.fillText(owner, x + 24, cardY + 152);
+
+    context.fillStyle = theme.foreground;
+    context.font = `600 18px ${MONO}`;
+    context.fillText(name, x + 24, cardY + 176);
+  });
+
+  return canvas.toDataURL("image/png");
+}
+
 async function renderAll(profile) {
   const lightCompanion = renderCompanion(false);
   const darkCompanion = renderCompanion(true);
+  const banners = {};
+  for (const [key, banner] of Object.entries(BANNERS)) {
+    banners[`banner-${key}-light.png`] = renderBanner(false, banner);
+    banners[`banner-${key}-dark.png`] = renderBanner(true, banner);
+  }
   return {
     "companion-light.png": lightCompanion,
     "companion-dark.png": darkCompanion,
@@ -719,6 +877,13 @@ async function renderAll(profile) {
     "timeline-dark.png": renderTimeline(true, false, profile.story),
     "timeline-mobile-light.png": renderTimeline(false, true, profile.story),
     "timeline-mobile-dark.png": renderTimeline(true, true, profile.story),
+    "stack-light.png": renderStack(false, false),
+    "stack-dark.png": renderStack(true, false),
+    "stack-mobile-light.png": renderStack(false, true),
+    "stack-mobile-dark.png": renderStack(true, true),
+    "opensource-light.png": renderOpenSource(false, profile.openSource),
+    "opensource-dark.png": renderOpenSource(true, profile.openSource),
+    ...banners,
   };
 }
 

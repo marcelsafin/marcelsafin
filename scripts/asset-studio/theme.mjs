@@ -1,25 +1,27 @@
 export const RASTER_THEMES = Object.freeze({
   dark: Object.freeze({
-    background: "#0d1015",
-    surface: "#111827",
-    foreground: "#f1f5f9",
-    muted: "#aeb9c8",
-    border: "#27303b",
+    background: "#050505",
+    surface: "#0f0f0f",
+    foreground: "#fafafa",
+    muted: "#c2c2c2",
+    border: "#424242",
+    accent: "#c084fc",
   }),
   light: Object.freeze({
-    background: "#f4f7fb",
-    surface: "#f1f5f9",
-    foreground: "#111827",
-    muted: "#27303b",
-    border: "#cbd5e1",
+    background: "#fafafa",
+    surface: "#ffffff",
+    foreground: "#0a0a0a",
+    muted: "#4a4a4a",
+    border: "#d4d4d4",
+    accent: "#7c3aed",
   }),
 });
 
 export const RASTER_ACCENTS = Object.freeze({
-  blue: "#5f97ff",
-  blueViolet: "#6f7dff",
-  violet: "#8b64f6",
-  pink: "#d466ab",
+  violet: "#c084fc",
+  lilac: "#a78bfa",
+  violetDeep: "#8b5cf6",
+  violetInk: "#7c3aed",
 });
 
 export const ASSET_TYPOGRAPHY = Object.freeze({
