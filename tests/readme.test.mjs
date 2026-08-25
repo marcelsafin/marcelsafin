@@ -105,7 +105,7 @@ test("renderProfileReadme renders the AI companion landing hierarchy", () => {
   assert.doesNotMatch(output, /<blockquote>|<details>|<summary>/);
   assert.match(
     output,
-    /<img width="1200" height="760" alt="Marsel Safin with an original AI companion illustration\. Built with GitHub Copilot\. AI-first development: systems, agents, graphs, and curiosity\." src="\.\/assets\/hero-light\.png">/,
+    /<img width="1200" alt="Marsel Safin with an original AI companion illustration\. Built with GitHub Copilot\. AI-first development: systems, agents, graphs, and curiosity\." src="\.\/assets\/hero-light\.png">/,
   );
   assert.doesNotMatch(output, /\*\*AI-FIRST DEVELOPER\*\*/);
   assert.doesNotMatch(
@@ -137,7 +137,7 @@ test("renderProfileReadme renders the AI companion landing hierarchy", () => {
   );
   assert.match(
     output,
-    /<img width="1200" height="820" alt="" src="\.\/assets\/timeline-light\.png">/,
+    /<img width="1200" alt="" src="\.\/assets\/timeline-light\.png">/,
   );
   assert.match(
     output,

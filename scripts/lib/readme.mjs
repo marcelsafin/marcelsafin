@@ -66,7 +66,7 @@ function renderHero(identity) {
     `  <source media="(max-width: 600px) and (prefers-color-scheme: light)" srcset="${HERO_MOBILE_LIGHT}">`,
     `  <source media="(prefers-color-scheme: dark)" srcset="${HERO_DARK}">`,
     `  <source media="(prefers-color-scheme: light)" srcset="${HERO_LIGHT}">`,
-    `  <img width="1200" height="760" alt="${alt}" src="${HERO_LIGHT}">`,
+    `  <img width="1200" alt="${alt}" src="${HERO_LIGHT}">`,
     "</picture>",
   ].join("\n");
 }
@@ -101,7 +101,7 @@ function renderPath(story) {
     `  <source media="(max-width: 600px) and (prefers-color-scheme: light)" srcset="${TIMELINE_MOBILE_LIGHT}">`,
     `  <source media="(prefers-color-scheme: dark)" srcset="${TIMELINE_DARK}">`,
     `  <source media="(prefers-color-scheme: light)" srcset="${TIMELINE_LIGHT}">`,
-    `  <img width="1200" height="820" alt="" src="${TIMELINE_LIGHT}">`,
+    `  <img width="1200" alt="" src="${TIMELINE_LIGHT}">`,
     "</picture>",
     ...entries,
   ].join("\n");
