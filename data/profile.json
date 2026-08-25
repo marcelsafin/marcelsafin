@@ -1,0 +1,90 @@
+{
+  "username": "marcelsafin",
+  "identity": {
+    "eyebrow": "AI-FIRST DEVELOPER",
+    "headline": "PhD in breaking things apart until I understand how they work.",
+    "intro": [
+      "Curiosity brought me into technology. AI became how I build.",
+      "I keep pulling systems apart until I understand enough to build with them."
+    ]
+  },
+  "story": [
+    {
+      "period": "LATE 2023",
+      "heading": "I wanted to understand how machines are built.",
+      "paragraphs": [
+        "When ChatGPT 3.5 arrived, technology became something I could question, provoke, and take apart.",
+        "I learned by experimenting, pushing limits, breaking assumptions, and tracing what happened next.",
+        "That loop turned curiosity into a direction."
+      ]
+    },
+    {
+      "period": "2024",
+      "heading": "Frontend became my entry into software.",
+      "paragraphs": [
+        "I started a 400 YH-point Front End Developer program and gained a structured view of JavaScript, APIs, testing, UX, accessibility, agile work, and delivery."
+      ]
+    },
+    {
+      "period": "2025",
+      "heading": "Using AI became AI-first development.",
+      "paragraphs": [
+        "I moved from prompting tools to building systems through them.",
+        "My work expanded into agent orchestration, custom harnesses, AI memory, token optimization, and specialized AI-native SaaS products.",
+        "I also began running open-weight models in Google Colab with access to approximately 40 GB of VRAM and contributing to open-source projects."
+      ]
+    },
+    {
+      "period": "NOW",
+      "heading": "I am following the systems underneath the tools.",
+      "paragraphs": [
+        "My current focus is graph engineering, context engineering, and machine-learning foundations."
+      ]
+    }
+  ],
+  "education": {
+    "program": "Front End Developer",
+    "yhPoints": 400,
+    "areas": [
+      "JavaScript and frameworks",
+      "API development",
+      "Software testing",
+      "UX and accessibility",
+      "Agile project work",
+      "26 weeks of LIA",
+      "AI, tools, and sustainable code"
+    ]
+  },
+  "howIBuild": {
+    "intro": "AI is not an add-on to my workflow. It is the environment I build through.",
+    "capabilities": [
+      "Problem definition",
+      "Product direction",
+      "Agent direction",
+      "Debugging",
+      "Model and tool selection",
+      "Deployment",
+      "UX"
+    ]
+  },
+  "openSource": {
+    "label": "Contributor to github/spec-kit",
+    "url": "https://github.com/github/spec-kit",
+    "signal": "40+ commits"
+  },
+  "currentlyExploring": [
+    "Graph engineering",
+    "Context engineering",
+    "ML foundations"
+  ],
+  "longTermQuestions": [
+    "Robotics",
+    "Medicine",
+    "Biology"
+  ],
+  "contacts": {
+    "github": "https://github.com/marcelsafin",
+    "linkedin": "https://www.linkedin.com/in/marcelsafin/",
+    "email": "mailto:marsel@mynextcode.se"
+  }
+}
