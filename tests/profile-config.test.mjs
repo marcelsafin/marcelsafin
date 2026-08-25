@@ -75,11 +75,28 @@ const validConfig = {
       "UX",
     ],
   },
-  openSource: {
-    label: "Contributor to github/spec-kit",
-    url: "https://github.com/github/spec-kit",
-    signal: "40+ commits",
-  },
+  openSource: [
+    {
+      label: "github/spec-kit",
+      url: "https://github.com/github/spec-kit",
+      signal: "47 merged PRs",
+    },
+    {
+      label: "github/copilot-cli",
+      url: "https://github.com/github/copilot-cli",
+      signal: "2 merged PRs",
+    },
+    {
+      label: "github/github-mcp-server",
+      url: "https://github.com/github/github-mcp-server",
+      signal: "1 merged PR",
+    },
+    {
+      label: "HKUDS/CLI-Anything",
+      url: "https://github.com/HKUDS/CLI-Anything",
+      signal: "2 merged PRs",
+    },
+  ],
   currentlyExploring: [
     "Graph engineering",
     "Context engineering",
@@ -113,6 +130,7 @@ test("validateProfileConfig accepts the exact origin story schema and returns a 
   assert.notStrictEqual(result.education, validConfig.education);
   assert.notStrictEqual(result.howIBuild, validConfig.howIBuild);
   assert.notStrictEqual(result.openSource, validConfig.openSource);
+  assert.notStrictEqual(result.openSource[0], validConfig.openSource[0]);
   assert.notStrictEqual(result.contacts, validConfig.contacts);
 
   result.identity.intro[0] = "changed";
@@ -141,7 +159,7 @@ test("validateProfileConfig enforces exact top-level and nested keys", () => {
     ["profile.story[0]", (config) => (config.story[0].extra = true)],
     ["profile.education", (config) => (config.education.extra = true)],
     ["profile.howIBuild", (config) => (config.howIBuild.extra = true)],
-    ["profile.openSource", (config) => (config.openSource.extra = true)],
+    ["profile.openSource[0]", (config) => (config.openSource[0].extra = true)],
     ["profile.contacts", (config) => (config.contacts.extra = true)],
   ];
 
@@ -159,7 +177,7 @@ test("validateProfileConfig enforces exact top-level and nested keys", () => {
     ["profile.story[0]", (config) => delete config.story[0].heading],
     ["profile.education", (config) => delete config.education.yhPoints],
     ["profile.howIBuild", (config) => delete config.howIBuild.intro],
-    ["profile.openSource", (config) => delete config.openSource.signal],
+    ["profile.openSource[0]", (config) => delete config.openSource[0].signal],
     ["profile.contacts", (config) => delete config.contacts.email],
   ];
 
@@ -385,8 +403,8 @@ test("validateProfileConfig rejects empty, surrounding-whitespace, overlong, and
       (config) => (config.education.program = "program "),
     ],
     [
-      "profile.openSource.signal",
-      (config) => (config.openSource.signal = "x".repeat(81)),
+      "profile.openSource[0].signal",
+      (config) => (config.openSource[0].signal = "x".repeat(81)),
     ],
     [
       "profile.currentlyExploring[0]",
@@ -452,13 +470,13 @@ test("validateProfileConfig rejects mention and email-like tokens in narrative f
       "@github",
     ],
     [
-      "profile.openSource.label",
-      (config, value) => (config.openSource.label = value),
+      "profile.openSource[0].label",
+      (config, value) => (config.openSource[0].label = value),
       "Contributor @github",
     ],
     [
-      "profile.openSource.signal",
-      (config, value) => (config.openSource.signal = value),
+      "profile.openSource[0].signal",
+      (config, value) => (config.openSource[0].signal = value),
       "a@evil.example",
     ],
     [
@@ -543,20 +561,20 @@ test("validateProfileConfig validates GitHub profile, LinkedIn host, open-source
 
   for (const url of ["not a URL"]) {
     const config = cloneConfig();
-    config.openSource.url = url;
+    config.openSource[0].url = url;
     assert.throws(
       () => validateProfileConfig(config),
-      /profile\.openSource\.url/,
+      /profile\.openSource\[0\]\.url/,
     );
   }
 
   for (const url of ["http://github.com/github/spec-kit", "javascript:alert(1)"]) {
     const config = cloneConfig();
-    config.openSource.url = url;
+    config.openSource[0].url = url;
     assert.throws(
       () => validateProfileConfig(config),
       (error) => {
-        assert.equal(error.message, "profile.openSource.url must use https:");
+        assert.equal(error.message, "profile.openSource[0].url must use https:");
         return true;
       },
     );
@@ -582,23 +600,23 @@ test("validateProfileConfig validates GitHub profile, LinkedIn host, open-source
   }
 });
 
-test("validateProfileConfig binds open-source proof to the approved public claim", () => {
+test("validateProfileConfig binds open-source proof to the approved public claims", () => {
   const cases = [
     [
       "label",
       "Contributor to another/repository",
-      'profile.openSource.label must equal "Contributor to github/spec-kit"',
+      'profile.openSource[0].label must equal "github/spec-kit"',
     ],
     [
       "signal",
       "50+ commits",
-      'profile.openSource.signal must equal "40+ commits"',
+      'profile.openSource[0].signal must equal "47 merged PRs"',
     ],
   ];
 
   for (const [field, value, message] of cases) {
     const config = cloneConfig();
-    config.openSource[field] = value;
+    config.openSource[0][field] = value;
 
     assert.throws(
       () => validateProfileConfig(config),
@@ -609,19 +627,40 @@ test("validateProfileConfig binds open-source proof to the approved public claim
     );
   }
 
+  const duplicated = cloneConfig();
+  duplicated.openSource[1] = structuredClone(duplicated.openSource[0]);
+  assert.throws(
+    () => validateProfileConfig(duplicated),
+    (error) => {
+      assert.equal(error.message, "profile.openSource must not repeat repositories");
+      return true;
+    },
+  );
+
+  const emptied = cloneConfig();
+  emptied.openSource = [];
+  assert.throws(
+    () => validateProfileConfig(emptied),
+    /profile\.openSource must contain between 1 and 4 items/,
+  );
+
+  const subset = cloneConfig();
+  subset.openSource = [subset.openSource[0]];
+  assert.doesNotThrow(() => validateProfileConfig(subset));
+
   assert.doesNotThrow(() => validateProfileConfig(cloneConfig()));
 });
 
-test("validateProfileConfig accepts only the canonical Spec Kit repository URL", () => {
+test("validateProfileConfig accepts only canonical approved repository URLs", () => {
   const canonical = cloneConfig();
-  canonical.openSource.url = "https://github.com/github/spec-kit/";
+  canonical.openSource[0].url = "https://github.com/github/spec-kit/";
   const normalized = validateProfileConfig(canonical);
   assert.equal(
-    normalized.openSource.url,
+    normalized.openSource[0].url,
     "https://github.com/github/spec-kit",
   );
   assert.equal(
-    canonical.openSource.url,
+    canonical.openSource[0].url,
     "https://github.com/github/spec-kit/",
   );
 
@@ -637,12 +676,12 @@ test("validateProfileConfig accepts only the canonical Spec Kit repository URL",
     "https://github.com/github/spec-kit//",
   ]) {
     const config = cloneConfig();
-    config.openSource.url = url;
+    config.openSource[0].url = url;
 
     assert.throws(
       () => validateProfileConfig(config),
       (error) => {
-        assert.match(error.message, /^profile\.openSource\.url\b/);
+        assert.match(error.message, /^profile\.openSource\[0\]\.url\b/);
         return true;
       },
       url,
@@ -655,10 +694,10 @@ test("validateProfileConfig rejects HTTPS URLs over the configured maximum", () 
   assert(longUrl.length > 240);
 
   const config = cloneConfig();
-  config.openSource.url = longUrl;
+  config.openSource[0].url = longUrl;
   assert.throws(
     () => validateProfileConfig(config),
-    /profile\.openSource\.url.*240/,
+    /profile\.openSource\[0\]\.url.*240/,
   );
 });
 
@@ -683,8 +722,8 @@ test("validateProfileConfig rejects raw NUL and DEL in every URL-bearing path", 
       "mailto:marsel\u007f@mynextcode.se",
     ],
     [
-      "profile.openSource.url",
-      (config, value) => (config.openSource.url = value),
+      "profile.openSource[0].url",
+      (config, value) => (config.openSource[0].url = value),
       "https://github.com/github/spec-kit\u0000",
       "https://github.com/github/spec-kit\u007f",
     ],

@@ -108,11 +108,14 @@ function renderPath(story) {
 }
 
 function renderProof(education, howIBuild, openSource) {
-  const openSourceUrl = safeDestinationUrl(
-    openSource.url,
-    "profile.openSource.url",
-    "https:",
-  );
+  const contributions = openSource.map((entry, index) => {
+    const url = safeDestinationUrl(
+      entry.url,
+      `profile.openSource[${index}].url`,
+      "https:",
+    );
+    return `<p><strong><a href="${escapeHtmlAttribute(url)}">${escapeHtmlText(entry.label)}</a></strong> — ${escapeHtmlText(entry.signal)}</p>`;
+  });
 
   return [
     "<hr>",
@@ -127,9 +130,9 @@ function renderProof(education, howIBuild, openSource) {
     `<p>${escapeHtmlText(howIBuild.intro)}</p>`,
     `<p>${howIBuild.capabilities.map(escapeHtmlText).join(" · ")}</p>`,
     "<hr>",
-    `<h3><a href="${escapeHtmlAttribute(openSourceUrl)}">${escapeHtmlText(openSource.label)}</a></h3>`,
+    "<h3>Open source contributions</h3>",
     "<p><strong>OPEN SOURCE / PUBLIC PROOF</strong></p>",
-    `<p><strong>${escapeHtmlText(openSource.signal)}</strong></p>`,
+    ...contributions,
   ].join("\n");
 }
 

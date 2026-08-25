@@ -67,11 +67,28 @@
       "UX"
     ]
   },
-  "openSource": {
-    "label": "Contributor to github/spec-kit",
-    "url": "https://github.com/github/spec-kit",
-    "signal": "40+ commits"
-  },
+  "openSource": [
+    {
+      "label": "github/spec-kit",
+      "url": "https://github.com/github/spec-kit",
+      "signal": "47 merged PRs"
+    },
+    {
+      "label": "github/copilot-cli",
+      "url": "https://github.com/github/copilot-cli",
+      "signal": "2 merged PRs"
+    },
+    {
+      "label": "github/github-mcp-server",
+      "url": "https://github.com/github/github-mcp-server",
+      "signal": "1 merged PR"
+    },
+    {
+      "label": "HKUDS/CLI-Anything",
+      "url": "https://github.com/HKUDS/CLI-Anything",
+      "signal": "2 merged PRs"
+    }
+  ],
   "currentlyExploring": [
     "Graph engineering",
     "Context engineering",

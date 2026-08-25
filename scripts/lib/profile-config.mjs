@@ -17,9 +17,28 @@ const HOW_I_BUILD_KEYS = ["intro", "capabilities"];
 const OPEN_SOURCE_KEYS = ["label", "url", "signal"];
 const CONTACT_KEYS = ["github", "linkedin", "email"];
 const STORY_PERIODS = ["LATE 2023", "2024", "2025", "NOW"];
-const APPROVED_OPEN_SOURCE_LABEL = "Contributor to github/spec-kit";
-const APPROVED_OPEN_SOURCE_URL = "https://github.com/github/spec-kit";
-const APPROVED_OPEN_SOURCE_SIGNAL = "40+ commits";
+const APPROVED_OPEN_SOURCE_ENTRIES = [
+  {
+    label: "github/spec-kit",
+    url: "https://github.com/github/spec-kit",
+    signal: "47 merged PRs",
+  },
+  {
+    label: "github/copilot-cli",
+    url: "https://github.com/github/copilot-cli",
+    signal: "2 merged PRs",
+  },
+  {
+    label: "github/github-mcp-server",
+    url: "https://github.com/github/github-mcp-server",
+    signal: "1 merged PR",
+  },
+  {
+    label: "HKUDS/CLI-Anything",
+    url: "https://github.com/HKUDS/CLI-Anything",
+    signal: "2 merged PRs",
+  },
+];
 const APPROVED_CAPABILITIES = new Set([
   "Problem definition",
   "Product direction",
@@ -42,7 +61,7 @@ export function validateProfileConfig(value) {
   assertStory(value.story);
   assertEducation(value.education);
   assertHowIBuild(value.howIBuild);
-  const openSourceUrl = assertOpenSource(value.openSource);
+  const openSourceUrls = assertOpenSource(value.openSource);
   assertStringArray(
     value.currentlyExploring,
     "profile.currentlyExploring",
@@ -60,7 +79,9 @@ export function validateProfileConfig(value) {
   assertContacts(value.contacts, value.username);
 
   const result = structuredClone(value);
-  result.openSource.url = openSourceUrl;
+  openSourceUrls.forEach((url, index) => {
+    result.openSource[index].url = url;
+  });
   return result;
 }
 
@@ -153,34 +174,44 @@ function assertHowIBuild(value) {
 
 function assertOpenSource(value) {
   const path = "profile.openSource";
-  assertRecord(value, path);
-  assertExactKeys(value, OPEN_SOURCE_KEYS, path);
-  assertFreeText(value.label, `${path}.label`, 100);
-  assertString(value.url, `${path}.url`, 240);
-  assertFreeText(value.signal, `${path}.signal`, 40);
+  assertArray(value, path);
+  assertArrayLength(value, path, 1, APPROVED_OPEN_SOURCE_ENTRIES.length);
 
-  if (value.label !== APPROVED_OPEN_SOURCE_LABEL) {
-    throw new TypeError(
-      `${path}.label must equal "${APPROVED_OPEN_SOURCE_LABEL}"`,
-    );
-  }
-  if (value.signal !== APPROVED_OPEN_SOURCE_SIGNAL) {
-    throw new TypeError(
-      `${path}.signal must equal "${APPROVED_OPEN_SOURCE_SIGNAL}"`,
-    );
-  }
+  const seen = new Set();
+  return value.map((entry, index) => {
+    const entryPath = `${path}[${index}]`;
+    assertRecord(entry, entryPath);
+    assertExactKeys(entry, OPEN_SOURCE_KEYS, entryPath);
+    assertFreeText(entry.label, `${entryPath}.label`, 100);
+    assertString(entry.url, `${entryPath}.url`, 240);
+    assertFreeText(entry.signal, `${entryPath}.signal`, 40);
+    assertHttpsUrl(entry.url, `${entryPath}.url`, 240);
 
-  assertHttpsUrl(value.url, `${path}.url`, 240);
-  if (
-    value.url !== APPROVED_OPEN_SOURCE_URL &&
-    value.url !== `${APPROVED_OPEN_SOURCE_URL}/`
-  ) {
-    throw new TypeError(
-      `${path}.url must equal "${APPROVED_OPEN_SOURCE_URL}"`,
+    const approved = APPROVED_OPEN_SOURCE_ENTRIES.find(
+      (candidate) =>
+        entry.url === candidate.url || entry.url === `${candidate.url}/`,
     );
-  }
-
-  return APPROVED_OPEN_SOURCE_URL;
+    if (!approved) {
+      throw new TypeError(
+        `${entryPath}.url must be an approved repository URL`,
+      );
+    }
+    if (entry.label !== approved.label) {
+      throw new TypeError(
+        `${entryPath}.label must equal "${approved.label}"`,
+      );
+    }
+    if (entry.signal !== approved.signal) {
+      throw new TypeError(
+        `${entryPath}.signal must equal "${approved.signal}"`,
+      );
+    }
+    if (seen.has(approved.url)) {
+      throw new TypeError(`${path} must not repeat repositories`);
+    }
+    seen.add(approved.url);
+    return approved.url;
+  });
 }
 
 function assertContacts(value, username) {

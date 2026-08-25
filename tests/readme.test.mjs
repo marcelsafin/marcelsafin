@@ -72,7 +72,7 @@ test("renderProfileReadme renders the AI companion landing hierarchy", () => {
     "<strong>02 / PROOF</strong>",
     "<h3>Front End Developer</h3>",
     "<h3>How I build</h3>",
-    "Contributor to github/spec-kit",
+    "Open source contributions",
     "<strong>03 / CURRENT</strong>",
     "<h3>Currently exploring</h3>",
     "<h3>Long-term questions</h3>",
@@ -217,8 +217,11 @@ test("renderProfileReadme includes required claims without dashboard or generic 
     "Model and tool selection",
     "Deployment",
     "UX",
-    "Contributor to github/spec-kit",
-    "<strong>40+ commits</strong>",
+    "Open source contributions",
+    '<a href="https://github.com/github/spec-kit">github/spec-kit</a></strong> — 47 merged PRs',
+    '<a href="https://github.com/github/copilot-cli">github/copilot-cli</a></strong> — 2 merged PRs',
+    '<a href="https://github.com/github/github-mcp-server">github/github-mcp-server</a></strong> — 1 merged PR',
+    '<a href="https://github.com/HKUDS/CLI-Anything">HKUDS/CLI-Anything</a></strong> — 2 merged PRs',
     "Graph engineering · Context engineering · ML foundations",
   ]) {
     assert.ok(output.includes(text), `missing ${text}`);
@@ -374,13 +377,13 @@ test("renderProfileReadme escapes hostile plain text without adding Markdown str
   assert.equal((output.match(/<h2>/g) ?? []).length, 4);
   assert.equal((output.match(/<h3>/g) ?? []).length, 9);
   assert.equal((output.match(/\]\(<(?:https|mailto):/g) ?? []).length, 0);
-  assert.equal((output.match(/<a href="https:/g) ?? []).length, 3);
+  assert.equal((output.match(/<a href="https:/g) ?? []).length, 6);
   assert.equal((output.match(/<a href="mailto:/g) ?? []).length, 1);
 });
 
 test("renderProfileReadme rejects unsafe direct configs instead of rendering them", () => {
   const cases = [
-    ["openSource.url", (config) => (config.openSource.url = "http://example.com")],
+    ["openSource.url", (config) => (config.openSource[0].url = "http://example.com")],
     [
       "contacts.email",
       (config) => (config.contacts.email = "mailto:person@example.com?subject=unsafe"),
@@ -398,7 +401,7 @@ test("renderProfileReadme rejects unsafe direct configs instead of rendering the
       assert.throws(
         () => readme.renderProfileReadme(config),
         (error) => {
-          assert.equal(error.message, "profile.openSource.url must use https:");
+          assert.equal(error.message, "profile.openSource[0].url must use https:");
           return true;
         },
       );

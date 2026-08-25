@@ -58,9 +58,12 @@
 <p>AI is not an add-on to my workflow. It is the environment I build through.</p>
 <p>Problem definition · Product direction · Agent direction · Debugging · Model and tool selection · Deployment · UX</p>
 <hr>
-<h3><a href="https://github.com/github/spec-kit">Contributor to github/spec-kit</a></h3>
+<h3>Open source contributions</h3>
 <p><strong>OPEN SOURCE / PUBLIC PROOF</strong></p>
-<p><strong>40+ commits</strong></p>
+<p><strong><a href="https://github.com/github/spec-kit">github/spec-kit</a></strong> — 47 merged PRs</p>
+<p><strong><a href="https://github.com/github/copilot-cli">github/copilot-cli</a></strong> — 2 merged PRs</p>
+<p><strong><a href="https://github.com/github/github-mcp-server">github/github-mcp-server</a></strong> — 1 merged PR</p>
+<p><strong><a href="https://github.com/HKUDS/CLI-Anything">HKUDS/CLI-Anything</a></strong> — 2 merged PRs</p>
 
 <hr>
 <p><strong>03 / CURRENT</strong></p>
