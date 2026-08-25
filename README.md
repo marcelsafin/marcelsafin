@@ -17,8 +17,11 @@
 <p><strong><a href="#user-content-the-path">Explore the origin story →</a></strong></p>
 
 <a id="the-path"></a>
-<p><strong>01 / ORIGIN</strong></p>
-<h2>THE PATH</h2>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/banner-origin-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./assets/banner-origin-light.png">
+  <img width="1200" alt="01 / ORIGIN — The path." src="./assets/banner-origin-light.png">
+</picture>
 <picture>
   <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="./assets/timeline-mobile-dark.png">
   <source media="(max-width: 600px) and (prefers-color-scheme: light)" srcset="./assets/timeline-mobile-light.png">
@@ -46,9 +49,24 @@
 <h3>I am following the systems underneath the tools.</h3>
 <p>My current focus is graph engineering, context engineering, and machine-learning foundations.</p>
 
-<hr>
-<p><strong>02 / PROOF</strong></p>
-<h2>Proof</h2>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/banner-stack-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./assets/banner-stack-light.png">
+  <img width="1200" alt="02 / STACK — Tools I work with." src="./assets/banner-stack-light.png">
+</picture>
+<picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="./assets/stack-mobile-dark.png">
+  <source media="(max-width: 600px) and (prefers-color-scheme: light)" srcset="./assets/stack-mobile-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/stack-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./assets/stack-light.png">
+  <img width="1200" alt="Frontend: React, Next.js, TypeScript, Tailwind. Backend: Python, FastAPI, C# and .NET, Node.js. DevOps and CI/CD: Docker, Azure DevOps, GitHub Actions, Linux. Testing and tools: Playwright, PostgreSQL, Git, Figma." src="./assets/stack-light.png">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/banner-proof-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./assets/banner-proof-light.png">
+  <img width="1200" alt="03 / PROOF — Proof of work." src="./assets/banner-proof-light.png">
+</picture>
 <h3>Front End Developer</h3>
 <p><strong>400&nbsp;YH-poäng / EDUCATION / FOUNDATIONS</strong></p>
 <p>JavaScript and frameworks · API development · Software testing · UX and accessibility · Agile project work · 26 weeks of LIA · AI, tools, and sustainable code</p>
@@ -59,15 +77,21 @@
 <p>Problem definition · Product direction · Agent direction · Debugging · Model and tool selection · Deployment · UX</p>
 <hr>
 <h3>Open source contributions</h3>
-<p><strong>OPEN SOURCE / PUBLIC PROOF</strong></p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/opensource-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./assets/opensource-light.png">
+  <img width="1200" alt="Merged pull requests across public repositories." src="./assets/opensource-light.png">
+</picture>
 <p><strong><a href="https://github.com/github/spec-kit">github/spec-kit</a></strong> — 47 merged PRs</p>
 <p><strong><a href="https://github.com/github/copilot-cli">github/copilot-cli</a></strong> — 2 merged PRs</p>
 <p><strong><a href="https://github.com/github/github-mcp-server">github/github-mcp-server</a></strong> — 1 merged PR</p>
 <p><strong><a href="https://github.com/HKUDS/CLI-Anything">HKUDS/CLI-Anything</a></strong> — 2 merged PRs</p>
 
-<hr>
-<p><strong>03 / CURRENT</strong></p>
-<h2>Questions</h2>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/banner-current-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./assets/banner-current-light.png">
+  <img width="1200" alt="04 / CURRENT — Questions I chase." src="./assets/banner-current-light.png">
+</picture>
 <h3>Currently exploring</h3>
 <p><strong>NEAR TERM / TECHNICAL DEPTH</strong></p>
 <p>Graph engineering · Context engineering · ML foundations</p>
@@ -76,10 +100,10 @@
 <p><strong>LONG TERM / MEANINGFUL SYSTEMS</strong></p>
 <p>Robotics · Medicine · Biology — and what AI could contribute there.</p>
 
-<hr>
-
-<p><strong>04 / CONTACT</strong></p>
-
-<h2>Contact</h2>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/banner-contact-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./assets/banner-contact-light.png">
+  <img width="1200" alt="05 / CONTACT — Reach me." src="./assets/banner-contact-light.png">
+</picture>
 
 <p><strong><a href="https://github.com/marcelsafin">GitHub</a> · <a href="https://www.linkedin.com/in/marcelsafin/">LinkedIn</a> · <a href="mailto:marsel@mynextcode.se">Email</a></strong></p>
