@@ -13,10 +13,10 @@ const contracts = {
   "hero-dark.png": [1200, 760, "forbidden"],
   "hero-mobile-light.png": [900, 1120, "forbidden"],
   "hero-mobile-dark.png": [900, 1120, "forbidden"],
-  "timeline-light.png": [1200, 820, "forbidden"],
-  "timeline-dark.png": [1200, 820, "forbidden"],
-  "timeline-mobile-light.png": [900, 1160, "forbidden"],
-  "timeline-mobile-dark.png": [900, 1160, "forbidden"],
+  "timeline-light.png": [1200, 320, "forbidden"],
+  "timeline-dark.png": [1200, 320, "forbidden"],
+  "timeline-mobile-light.png": [900, 588, "forbidden"],
+  "timeline-mobile-dark.png": [900, 588, "forbidden"],
   "stack-light.png": [1200, 900, "forbidden"],
   "stack-dark.png": [1200, 900, "forbidden"],
   "stack-mobile-light.png": [900, 1600, "forbidden"],
@@ -100,7 +100,7 @@ test("hero origin card carries a subtle accent top edge", async () => {
   assert.match(studio, /drawAccentEdge\(context, card/);
 });
 
-test("desktop timeline panels are linked by a vertical spine", async () => {
+test("desktop timeline cards are linked by a horizontal spine", async () => {
   const projectRoot = path.resolve(new URL("..", import.meta.url).pathname);
   const studio = await fs.readFile(
     path.join(projectRoot, "scripts/asset-studio/studio.mjs"),
@@ -110,13 +110,3 @@ test("desktop timeline panels are linked by a vertical spine", async () => {
   assert.match(studio, /drawTimelineSpine\(context, width, dark\)/);
 });
 
-test("signal geometry uses soft gradient strokes, not flat lines", async () => {
-  const projectRoot = path.resolve(new URL("..", import.meta.url).pathname);
-  const studio = await fs.readFile(
-    path.join(projectRoot, "scripts/asset-studio/studio.mjs"),
-    "utf8",
-  );
-
-  assert.match(studio, /createLinearGradient/);
-  assert.match(studio, /signalGradient/);
-});

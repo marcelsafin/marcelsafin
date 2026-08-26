@@ -54,22 +54,22 @@ const ASSET_CONTRACTS = Object.freeze({
   }),
   "timeline-light.png": Object.freeze({
     width: 1200,
-    height: 820,
+    height: 320,
     transparency: "forbidden",
   }),
   "timeline-dark.png": Object.freeze({
     width: 1200,
-    height: 820,
+    height: 320,
     transparency: "forbidden",
   }),
   "timeline-mobile-light.png": Object.freeze({
     width: 900,
-    height: 1160,
+    height: 588,
     transparency: "forbidden",
   }),
   "timeline-mobile-dark.png": Object.freeze({
     width: 900,
-    height: 1160,
+    height: 588,
     transparency: "forbidden",
   }),
   "stack-light.png": Object.freeze({

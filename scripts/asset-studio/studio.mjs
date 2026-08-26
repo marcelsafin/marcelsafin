@@ -1,9 +1,7 @@
 import * as THREE from "../../node_modules/three/build/three.module.js";
 import {
   HERO_LAYOUTS,
-  TIMELINE_LAYOUTS,
   equalizedRightTitleWidth,
-  wrapWords,
 } from "./layout.mjs";
 import {
   ASSET_TYPOGRAPHY,
@@ -395,49 +393,6 @@ function loadImage(dataUrl) {
   });
 }
 
-function drawMirroredSignals(context, width, dark, mobile) {
-  const theme = dark ? PALETTE.dark : PALETTE.light;
-  const fadeOut = dark ? "rgba(192,132,252,0)" : "rgba(124,58,237,0)";
-  const inset = mobile ? 54 : 54;
-  const reach = mobile ? 180 : 150;
-  const startY = mobile ? 300 : 286;
-  const stepY = mobile ? 54 : 38;
-
-  context.save();
-  context.fillStyle = theme.border;
-  context.lineWidth = mobile ? 3 : 2;
-  for (let index = 0; index < 3; index += 1) {
-    const y = startY + index * stepY;
-    const offset = index * (mobile ? 18 : 12);
-    const endLeft = inset + reach + offset;
-    const endRight = width - inset - reach - offset;
-
-    const signalGradient = context.createLinearGradient(inset, y, endLeft, y);
-    signalGradient.addColorStop(0, theme.border);
-    signalGradient.addColorStop(1, fadeOut);
-    context.strokeStyle = signalGradient;
-    context.beginPath();
-    context.moveTo(inset, y);
-    context.lineTo(endLeft, y);
-    context.stroke();
-
-    const mirroredGradient = context.createLinearGradient(width - inset, y, endRight, y);
-    mirroredGradient.addColorStop(0, theme.border);
-    mirroredGradient.addColorStop(1, fadeOut);
-    context.strokeStyle = mirroredGradient;
-    context.beginPath();
-    context.moveTo(width - inset, y);
-    context.lineTo(endRight, y);
-    context.stroke();
-
-    const tick = mobile ? 9 : 7;
-    for (const x of [inset, width - inset]) {
-      context.fillRect(x - tick / 2, y - tick / 2, tick, tick);
-    }
-  }
-  context.restore();
-}
-
 function drawAccentEdge(context, card, dark) {
   const theme = dark ? PALETTE.dark : PALETTE.light;
   context.save();
@@ -450,20 +405,22 @@ function drawAccentEdge(context, card, dark) {
   context.restore();
 }
 
+// Horizontal axis behind the year cards, visible only in the gaps.
 function drawTimelineSpine(context, width, dark) {
   const solid = dark ? "rgba(192,132,252,.4)" : "rgba(124,58,237,.35)";
   const clear = dark ? "rgba(192,132,252,0)" : "rgba(124,58,237,0)";
-  const gradient = context.createLinearGradient(width / 2, 112, width / 2, 732);
+  const y = 160;
+  const gradient = context.createLinearGradient(64, y, width - 64, y);
   gradient.addColorStop(0, clear);
-  gradient.addColorStop(0.3, solid);
-  gradient.addColorStop(0.7, solid);
+  gradient.addColorStop(0.15, solid);
+  gradient.addColorStop(0.85, solid);
   gradient.addColorStop(1, clear);
   context.save();
   context.strokeStyle = gradient;
   context.lineWidth = 2;
   context.beginPath();
-  context.moveTo(width / 2, 116);
-  context.lineTo(width / 2, 728);
+  context.moveTo(64, y);
+  context.lineTo(width - 64, y);
   context.stroke();
   context.restore();
 }
@@ -513,8 +470,6 @@ function drawHeroBackdrop(context, dark, mobile) {
       170,
     );
   }
-
-  drawMirroredSignals(context, width, dark, mobile);
 
   const cell = layout.blurField;
   context.fillStyle = theme.surface;
@@ -647,34 +602,12 @@ function renderHeroAnimation({ dark, frames }) {
   return output;
 }
 
-function renderTimeline(dark, mobile, story) {
+function renderTimeline(dark, mobile) {
   const width = mobile ? 900 : 1200;
-  const height = mobile ? 1160 : 820;
+  const height = mobile ? 588 : 320;
   const theme = dark ? PALETTE.dark : PALETTE.light;
-  const mobileLayout = TIMELINE_LAYOUTS.mobile;
   const { canvas, context } = makeCanvas(width, height);
   drawBase(context, width, height, dark);
-
-  context.fillStyle = theme.foreground;
-  context.font = `700 ${mobile ? 44 : 30}px ${MONO}`;
-  context.textAlign = "left";
-  context.fillText(
-    "Origin story",
-    mobile ? mobileLayout.title.x : 64,
-    mobile ? mobileLayout.title.baseline : 68,
-  );
-  context.fillStyle = theme.muted;
-  context.font = `700 ${
-    mobile
-      ? ASSET_TYPOGRAPHY.timeline.mobile.eyebrow
-      : ASSET_TYPOGRAPHY.timeline.desktop.eyebrow
-  }px ${MONO}`;
-  context.textAlign = "right";
-  context.fillText(
-    "FOUR SIGNALS / ONE DIRECTION",
-    mobile ? mobileLayout.eyebrow.x + mobileLayout.eyebrow.width : width - 64,
-    mobile ? mobileLayout.eyebrow.baseline : 66,
-  );
 
   const years = ["2023", "2024", "2025", "NOW"];
   const labels = [
@@ -683,59 +616,40 @@ function renderTimeline(dark, mobile, story) {
     "03 / AI SYSTEMS",
     "04 / FOUNDATIONS",
   ];
-  const panels = mobile
-    ? Array.from({ length: 4 }, (_, index) => ({
-        ...mobileLayout.firstPanel,
-        y: mobileLayout.firstPanel.y + index * mobileLayout.panelStep,
-      }))
-    : [
-        { x: 64, y: 112, width: 520, height: 294 },
-        { x: 616, y: 112, width: 520, height: 294 },
-        { x: 64, y: 438, width: 520, height: 294 },
-        { x: 616, y: 438, width: 520, height: 294 },
-      ];
+
+  const margin = 64;
+  const gap = 20;
+  const columns = mobile ? 2 : 4;
+  const cardWidth = (width - margin * 2 - gap * (columns - 1)) / columns;
+  const cardHeight = mobile ? 220 : 192;
 
   if (!mobile) {
     drawTimelineSpine(context, width, dark);
   }
 
-  panels.forEach((panel, index) => {
+  years.forEach((year, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const x = margin + column * (cardWidth + gap);
+    const y = margin + row * (cardHeight + gap);
+
     context.fillStyle = theme.surface;
-    context.fillRect(panel.x, panel.y, panel.width, panel.height);
+    context.fillRect(x, y, cardWidth, cardHeight);
     context.strokeStyle = theme.border;
     context.lineWidth = 2;
-    context.strokeRect(panel.x, panel.y, panel.width, panel.height);
+    context.strokeRect(x, y, cardWidth, cardHeight);
 
-    context.fillStyle = theme.accent;
-    context.fillRect(panel.x + 30, panel.y + 30, 14, 14);
-
+    const inset = 28;
     context.textAlign = "left";
-    context.fillStyle = theme.muted;
-    context.font = `700 ${
-      mobile
-        ? ASSET_TYPOGRAPHY.timeline.mobile.label
-        : ASSET_TYPOGRAPHY.timeline.desktop.label
-    }px ${MONO}`;
-    context.fillText(labels[index], panel.x + 66, panel.y + 47);
-    context.fillStyle = theme.foreground;
-    context.font = `700 ${mobile ? 54 : 42}px ${MONO}`;
-    context.fillText(years[index], panel.x + 34, panel.y + (mobile ? 112 : 116));
+    context.fillStyle = theme.accent;
+    context.font = `700 ${mobile ? 64 : 60}px ${MONO}`;
+    context.letterSpacing = "0px";
+    context.fillText(year, x + inset, y + (mobile ? 104 : 92));
 
-    context.font = `600 ${
-      mobile
-        ? ASSET_TYPOGRAPHY.timeline.mobile.title
-        : ASSET_TYPOGRAPHY.timeline.desktop.title
-    }px ${MONO}`;
-    const titleX = panel.x + (mobile ? 210 : 176);
-    const titleY = panel.y + (mobile ? 105 : 108);
-    const lines = wrapWords(
-      story[index].heading,
-      (text) => context.measureText(text).width,
-      panel.width - (mobile ? 240 : 210),
-    );
-    lines.forEach((line, lineIndex) => {
-      context.fillText(line, titleX, titleY + lineIndex * (mobile ? 44 : 38));
-    });
+    context.fillStyle = theme.muted;
+    context.font = `600 ${mobile ? 24 : 15}px ${MONO}`;
+    context.letterSpacing = "1px";
+    context.fillText(labels[index], x + inset, y + (mobile ? 168 : 144));
   });
 
   return canvas.toDataURL("image/png");
@@ -908,10 +822,10 @@ async function renderAll(profile) {
     "hero-dark.png": await renderHero(true, false, darkCompanion),
     "hero-mobile-light.png": await renderHero(false, true, lightCompanion),
     "hero-mobile-dark.png": await renderHero(true, true, darkCompanion),
-    "timeline-light.png": renderTimeline(false, false, profile.story),
-    "timeline-dark.png": renderTimeline(true, false, profile.story),
-    "timeline-mobile-light.png": renderTimeline(false, true, profile.story),
-    "timeline-mobile-dark.png": renderTimeline(true, true, profile.story),
+    "timeline-light.png": renderTimeline(false, false),
+    "timeline-dark.png": renderTimeline(true, false),
+    "timeline-mobile-light.png": renderTimeline(false, true),
+    "timeline-mobile-dark.png": renderTimeline(true, true),
     "stack-light.png": renderStack(false, false),
     "stack-dark.png": renderStack(true, false),
     "stack-mobile-light.png": renderStack(false, true),
