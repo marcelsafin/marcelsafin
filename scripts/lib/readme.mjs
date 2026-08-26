@@ -149,7 +149,7 @@ function renderStack() {
       dark: STACK_DARK,
       light: STACK_LIGHT,
       fallback: STACK_LIGHT,
-      alt: "Frontend: React, Next.js, TypeScript, Tailwind. Backend: Python, FastAPI, C# and .NET, Node.js. DevOps and CI/CD: Docker, Azure DevOps, GitHub Actions, Linux. Testing and tools: Playwright, PostgreSQL, Git, Figma.",
+      alt: "React, Next.js, TypeScript, Tailwind, Python, FastAPI, C# and .NET, Node.js, Docker, Azure DevOps, GitHub Actions, Linux, Playwright, PostgreSQL, Git and Figma.",
     }),
   ].join("\n");
 }

@@ -801,61 +801,52 @@ function renderStack(dark, mobile) {
   const { canvas, context } = makeCanvas(width, height);
   drawBase(context, width, height, dark);
 
-  // One rhythm: the same gap separates labels, cells, and groups,
-  // with equal margins on every side (grid solved to land exactly).
+  // Scrollstack stack grid: a flat grid of cells, icon centered
+  // above a small centered name — no category labels.
   const margin = 64;
   const gap = mobile ? 24 : 20;
   const columns = mobile ? 2 : 4;
-  const rows = mobile ? 2 : 1;
+  const tools = STACK_GROUPS.flatMap(([, groupTools]) => groupTools);
+  const rows = tools.length / columns;
   const cellWidth = (width - margin * 2 - gap * (columns - 1)) / columns;
-  const cellHeight = mobile ? 137 : 143;
-  const labelSize = mobile ? 28 : 15;
-  const nameSize = mobile ? 26 : 17;
-  let y = margin;
+  const cellHeight = (height - margin * 2 - gap * (rows - 1)) / rows;
+  const iconSize = mobile ? 56 : 44;
+  const nameSize = mobile ? 24 : 15;
+  const innerGap = mobile ? 26 : 20;
 
-  for (const [category, tools] of STACK_GROUPS) {
-    context.textAlign = "left";
-    context.fillStyle = theme.accent;
-    context.font = `700 ${labelSize}px ${MONO}`;
-    context.letterSpacing = "3px";
-    context.fillText(category, margin, y + Math.round(labelSize * 0.78));
+  tools.forEach((tool, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const x = margin + column * (cellWidth + gap);
+    const top = margin + row * (cellHeight + gap);
 
-    tools.forEach((tool, index) => {
-      const column = index % columns;
-      const row = Math.floor(index / columns);
-      const x = margin + column * (cellWidth + gap);
-      const top = y + labelSize + gap + row * (cellHeight + gap);
+    context.fillStyle = theme.surface;
+    context.fillRect(x, top, cellWidth, cellHeight);
+    context.strokeStyle = theme.border;
+    context.lineWidth = 2;
+    context.strokeRect(x, top, cellWidth, cellHeight);
 
-      context.fillStyle = theme.surface;
-      context.fillRect(x, top, cellWidth, cellHeight);
-      context.strokeStyle = theme.border;
-      context.lineWidth = 2;
-      context.strokeRect(x, top, cellWidth, cellHeight);
+    const contentHeight = iconSize + innerGap + nameSize;
+    const contentTop = top + (cellHeight - contentHeight) / 2;
+    drawStackIcon(
+      context,
+      STACK_ICON_SLUGS[tool],
+      x + cellWidth / 2 - iconSize / 2,
+      contentTop,
+      iconSize,
+      theme.muted,
+    );
 
-      const inset = mobile ? 28 : 24;
-      const iconSize = mobile ? 44 : 34;
-      drawStackIcon(
-        context,
-        STACK_ICON_SLUGS[tool],
-        x + inset,
-        top + (mobile ? 24 : 20),
-        iconSize,
-        theme.foreground,
-      );
-
-      context.fillStyle = theme.foreground;
-      context.font = `600 ${nameSize}px ${MONO}`;
-      context.letterSpacing = "2px";
-      context.textAlign = "left";
-      context.fillText(
-        tool.toUpperCase(),
-        x + inset,
-        top + cellHeight - (mobile ? 26 : 22),
-      );
-    });
-
-    y += labelSize + gap + rows * (cellHeight + gap);
-  }
+    context.fillStyle = theme.muted;
+    context.font = `600 ${nameSize}px ${MONO}`;
+    context.letterSpacing = "2px";
+    context.textAlign = "center";
+    context.fillText(
+      tool.toUpperCase(),
+      x + cellWidth / 2,
+      contentTop + iconSize + innerGap + Math.round(nameSize * 0.78),
+    );
+  });
 
   return canvas.toDataURL("image/png");
 }
