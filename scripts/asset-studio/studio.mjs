@@ -440,7 +440,7 @@ function drawHeroBackdrop(context, dark, mobile) {
     x: mobile ? 56 : 58,
     y: mobile ? 72 : 62,
     number: "01 /",
-    label: "BUILT WITH GITHUB COPILOT",
+    label: "HOME",
     size: mobile
       ? ASSET_TYPOGRAPHY.hero.mobile.attribution
       : ASSET_TYPOGRAPHY.hero.desktop.attribution,
