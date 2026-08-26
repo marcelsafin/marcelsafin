@@ -853,59 +853,49 @@ function renderStack(dark, mobile) {
 
 function renderOpenSource(dark, openSource) {
   const width = 1200;
-  const height = 360;
+  const height = 200;
   const theme = dark ? PALETTE.dark : PALETTE.light;
   const { canvas, context } = makeCanvas(width, height);
-  drawBase(context, width, height, dark);
 
-  drawMicroLabel(context, {
-    x: 64,
-    y: 76,
-    number: "OPEN SOURCE",
-    label: "/ PUBLIC PROOF",
-    size: 15,
-    dark,
-    tracking: "3px",
-  });
-
-  const margin = 64;
-  const gap = 16;
-  const cardWidth = (width - margin * 2 - gap * 3) / 4;
-  const cardY = 104;
-  const cardHeight = 192;
+  // Transparent panel: four quiet cards, nothing else.
+  const gap = 20;
+  const cardWidth = (width - gap * 3) / 4;
+  const cardY = 1;
+  const cardHeight = height - 2;
 
   openSource.forEach((entry, index) => {
-    const x = margin + index * (cardWidth + gap);
+    const x = Math.round(index * (cardWidth + gap)) + 1;
     context.fillStyle = theme.surface;
-    context.fillRect(x, cardY, cardWidth, cardHeight);
+    context.fillRect(x, cardY, cardWidth - 2, cardHeight);
     context.strokeStyle = theme.border;
     context.lineWidth = 2;
-    context.strokeRect(x, cardY, cardWidth, cardHeight);
+    context.strokeRect(x, cardY, cardWidth - 2, cardHeight);
 
     const countMatch = /^(\d+) merged PRs?$/u.exec(entry.signal);
     const count = countMatch ? countMatch[1] : entry.signal;
     const slash = entry.label.indexOf("/");
     const owner = entry.label.slice(0, slash + 1);
     const name = entry.label.slice(slash + 1);
+    const inset = 28;
 
     context.textAlign = "left";
     context.fillStyle = theme.accent;
-    context.font = `700 52px ${MONO}`;
+    context.font = `700 54px ${MONO}`;
     context.letterSpacing = "0px";
-    context.fillText(count, x + 24, cardY + 82);
+    context.fillText(count, x + inset, cardY + 88);
 
     context.fillStyle = theme.muted;
     context.font = `700 12px ${MONO}`;
     context.letterSpacing = "3px";
-    context.fillText(count === "1" ? "MERGED PR" : "MERGED PRS", x + 24, cardY + 112);
+    context.fillText(count === "1" ? "MERGED PR" : "MERGED PRS", x + inset, cardY + 118);
 
-    context.font = `400 14px ${MONO}`;
+    context.font = `400 15px ${MONO}`;
     context.letterSpacing = "0px";
-    context.fillText(owner, x + 24, cardY + 152);
-
+    const ownerWidth = context.measureText(owner).width;
+    context.fillText(owner, x + inset, cardY + 160);
     context.fillStyle = theme.foreground;
-    context.font = `600 18px ${MONO}`;
-    context.fillText(name, x + 24, cardY + 176);
+    context.font = `600 15px ${MONO}`;
+    context.fillText(name, x + inset + ownerWidth, cardY + 160);
   });
 
   return canvas.toDataURL("image/png");

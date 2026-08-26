@@ -94,13 +94,13 @@ const ASSET_CONTRACTS = Object.freeze({
   }),
   "opensource-light.png": Object.freeze({
     width: 1200,
-    height: 360,
-    transparency: "forbidden",
+    height: 200,
+    transparency: "required",
   }),
   "opensource-dark.png": Object.freeze({
     width: 1200,
-    height: 360,
-    transparency: "forbidden",
+    height: 200,
+    transparency: "required",
   }),
   "banner-origin-light.png": Object.freeze({
     width: 1200,
