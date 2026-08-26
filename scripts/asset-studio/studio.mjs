@@ -329,7 +329,7 @@ function fitLetterSpacing(context, text, targetWidth) {
   context.letterSpacing = `${(low + high) / 2}px`;
 }
 
-function drawBase(context, width, height, dark) {
+function drawBase(context, width, height, dark, { rails = true } = {}) {
   const theme = dark ? PALETTE.dark : PALETTE.light;
   context.fillStyle = theme.background;
   context.fillRect(0, 0, width, height);
@@ -337,6 +337,10 @@ function drawBase(context, width, height, dark) {
   context.strokeStyle = theme.border;
   context.lineWidth = 2;
   context.strokeRect(24, 24, width - 48, height - 48);
+
+  if (!rails) {
+    return;
+  }
 
   context.save();
   context.globalAlpha = 0.55;
@@ -430,7 +434,7 @@ function drawHeroBackdrop(context, dark, mobile) {
   const height = mobile ? 1120 : 760;
   const theme = dark ? PALETTE.dark : PALETTE.light;
   const layout = mobile ? HERO_LAYOUTS.mobile : HERO_LAYOUTS.desktop;
-  drawBase(context, width, height, dark);
+  drawBase(context, width, height, dark, { rails: false });
 
   drawMicroLabel(context, {
     x: mobile ? 56 : 58,
