@@ -801,28 +801,30 @@ function renderStack(dark, mobile) {
   const { canvas, context } = makeCanvas(width, height);
   drawBase(context, width, height, dark);
 
-  const margin = mobile ? 54 : 64;
-  const gap = 16;
+  // One rhythm: the same gap separates labels, cells, and groups,
+  // with equal margins on every side (grid solved to land exactly).
+  const margin = 64;
+  const gap = mobile ? 24 : 20;
   const columns = mobile ? 2 : 4;
+  const rows = mobile ? 2 : 1;
   const cellWidth = (width - margin * 2 - gap * (columns - 1)) / columns;
-  const cellHeight = mobile ? 140 : 124;
+  const cellHeight = mobile ? 137 : 143;
   const labelSize = mobile ? 28 : 15;
   const nameSize = mobile ? 26 : 17;
-  const groupStep = mobile ? 372 : 200;
-  let y = mobile ? 96 : 92;
+  let y = margin;
 
   for (const [category, tools] of STACK_GROUPS) {
     context.textAlign = "left";
     context.fillStyle = theme.accent;
     context.font = `700 ${labelSize}px ${MONO}`;
     context.letterSpacing = "3px";
-    context.fillText(category, margin, y);
+    context.fillText(category, margin, y + Math.round(labelSize * 0.78));
 
     tools.forEach((tool, index) => {
       const column = index % columns;
       const row = Math.floor(index / columns);
       const x = margin + column * (cellWidth + gap);
-      const top = y + 24 + row * (cellHeight + gap);
+      const top = y + labelSize + gap + row * (cellHeight + gap);
 
       context.fillStyle = theme.surface;
       context.fillRect(x, top, cellWidth, cellHeight);
@@ -852,7 +854,7 @@ function renderStack(dark, mobile) {
       );
     });
 
-    y += groupStep;
+    y += labelSize + gap + rows * (cellHeight + gap);
   }
 
   return canvas.toDataURL("image/png");
