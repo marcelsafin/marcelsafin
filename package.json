@@ -16,6 +16,6 @@
   "devDependencies": {
     "playwright-core": "^1.62.1",
     "pngjs": "^7.0.0",
-    "three": "^0.185.1"
+    "three": "^0.186.0"
   }
 }
